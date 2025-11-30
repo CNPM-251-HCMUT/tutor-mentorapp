@@ -6,7 +6,6 @@ import LoginPage from './pages/auth/LoginPage';
 import StudentDashboard from './pages/student/StudentDashboard';
 import StudentGroups from './pages/student/StudentGroups';
 import StudentTutors from './pages/student/StudentTutor';
-import StudentSchedule from './pages/student/StudentSchedule';
 import StudentClasses from './pages/student/StudentClasses';
 import StudentSessions from './pages/student/StudentSession';
 import StudentFeedback from './pages/student/StudentFeedback';
@@ -21,7 +20,12 @@ import TutorFeedback from './pages/tutor/TutorFeedback';
 import TutorDocuments from './pages/tutor/TutorDocuments';
 
 import StaffDashboard from './pages/staff/StaffDashboard';
+import StaffReports from './pages/staff/StaffReports';
+import StaffMonitoring from './pages/staff/StaffMonitoring';
+
 import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminPolicies from './pages/admin/AdminPolicies';
+import UsersManagement from './pages/admin/UsersManagement';
 
 function App() {
   return (
@@ -38,7 +42,6 @@ function App() {
           {/* Student */}
           <Route path="/student/dashboard" element={<StudentDashboard />} />
           <Route path="/student/groups" element={<StudentGroups />} />
-          <Route path="/student/schedule" element={<StudentSchedule />} />
           <Route path="/student/classes" element={<StudentClasses />} />
           <Route path="/student/tutors" element={<StudentTutors />} />
           <Route path="/student/feedback" element={<StudentFeedback />} />
@@ -56,7 +59,12 @@ function App() {
 
           {/* Staff + Admin */}
           <Route path="/staff/dashboard" element={<StaffDashboard />} />
+          <Route path="/staff/reports" element={<StaffReports />} />
+          <Route path="/staff/monitoring" element={<StaffMonitoring />} />
+          
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/users" element={<UsersManagement />} />
+          <Route path="/admin/policies" element={<AdminPolicies />} />
 
         </Route>
       </Routes>
