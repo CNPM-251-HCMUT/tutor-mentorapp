@@ -18,6 +18,12 @@
 
 2/ npm run dev để chạy (nó sẽ hiện cổng localhost, mình nhấn vào)
 
+3/ nếu UI thô, dùng lệnh:
+
+npm install -D tailwindcss@3 postcss autoprefixer
+
+rồi npm run dev lại
+
 **Gọi API**
 
 các api được lưu trong FE/src/pages/service/api.ts
