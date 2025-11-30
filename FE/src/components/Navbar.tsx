@@ -18,32 +18,44 @@ export default function Navbar() {
   }, [lang]);
 
   useEffect(() => {
-    authApi.me().then(res => {
+    authApi.me().then((res) => {
       if (res?.user) setRole(res.user.role);
     });
   }, []);
 
   const handleLogout = async () => {
-    try { await authApi.logout(); } catch {}
+    try {
+      await authApi.logout();
+    } catch {}
     localStorage.removeItem("token");
     navigate("/login");
   };
 
-  // Role prefix
   const prefix = role ? `/${role.toLowerCase()}` : "";
 
   return (
     <>
       <div className="w-full bg-white shadow-sm">
         <nav className="w-full px-8 py-2 flex items-center bg-white shadow-sm gap-10">
-          
           <img src="/bklogo.png" className="h-12" />
 
+          {/* MENU */}
           <div className="flex items-center gap-8 text-sm">
+
+            {/* Dashboard */}
             <NavLink to={`${prefix}/dashboard`}>{t.dashboard}</NavLink>
-            <NavLink to={`${prefix}/schedule`}>{t.schedules}</NavLink>
+
+            {/* SCHEDULES → GROUPS for STUDENT */}
+            {role === "Student" ? (
+              <NavLink to={`${prefix}/groups`}>{t.groups}</NavLink>
+            ) : (
+              <NavLink to={`${prefix}/schedule`}>{t.schedules}</NavLink>
+            )}
+
+            {/* Classes */}
             <NavLink to={`${prefix}/classes`}>{t.classes}</NavLink>
 
+            {/* Tutors/Progress */}
             {role === "Student" ? (
               <NavLink to={`${prefix}/tutors`}>{t.tutors}</NavLink>
             ) : (
@@ -54,7 +66,7 @@ export default function Navbar() {
             <NavLink to={`${prefix}/feedback`}>{t.feedback}</NavLink>
           </div>
 
-          {/* Right side */}
+          {/* RIGHT SIDE */}
           <div className="flex items-center gap-5 ml-auto">
             <div className="flex items-center gap-1 border rounded-full px-3 py-1 text-sm">
               <button onClick={() => setLang("vi")}>VI</button>
@@ -68,16 +80,23 @@ export default function Navbar() {
             </div>
 
             <div className="relative" ref={menuRef}>
-              <img src="/avatar.jpg" className="w-7 h-7 cursor-pointer"
-                   onClick={() => setOpenMenu(p => !p)} />
+              <img
+                src="/avatar.jpg"
+                className="w-7 h-7 cursor-pointer"
+                onClick={() => setOpenMenu((p) => !p)}
+              />
               {openMenu && (
                 <div className="absolute right-0 mt-2 w-40 border bg-white rounded shadow-md z-50">
-                  <button className="w-full px-4 py-2"
-                          onClick={() => navigate("/settings")}>
+                  <button
+                    className="w-full px-4 py-2 hover:bg-gray-100"
+                    onClick={() => navigate("/settings")}
+                  >
                     {t.settings}
                   </button>
-                  <button className="w-full px-4 py-2 text-red-600"
-                          onClick={handleLogout}>
+                  <button
+                    className="w-full px-4 py-2 text-red-600 hover:bg-gray-100"
+                    onClick={handleLogout}
+                  >
                     {t.logout}
                   </button>
                 </div>
@@ -86,7 +105,7 @@ export default function Navbar() {
           </div>
         </nav>
 
-        {/* ROLE BADGE */}
+        {/* TITLE BAR */}
         <div className="px-8 pb-3 flex items-center gap-3 pt-2">
           <h1 className="text-lg font-semibold">{t.program}</h1>
           {role && (
@@ -97,7 +116,6 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Để router con hoạt động */}
       <Outlet />
     </>
   );
