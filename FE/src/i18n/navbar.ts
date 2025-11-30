@@ -8,7 +8,7 @@ export const navbarText = {
     documents: "DOCUMENTS",
     feedback: "FEEDBACK",
     program: "HCMUT Tutor Program",
-
+    groups: "Groups",
     settings: "Settings",
     logout: "Logout",
   },
@@ -22,7 +22,7 @@ export const navbarText = {
     documents: "TÀI LIỆU",
     feedback: "PHẢN HỒI",
     program: "Chương trình Tutor HCMUT",
-
+    groups: "Nhóm học",
     settings: "Cài đặt",
     logout: "Đăng xuất",
   },
