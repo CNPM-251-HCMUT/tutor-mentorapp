@@ -70,8 +70,7 @@ export default function LoginPage() {
           if (res.user.role === "Student") navigate("/student/dashboard");
           else if (res.user.role === "Tutor") navigate("/tutor/dashboard");
           else if (res.user.role === "Staff") navigate("/staff/dashboard");
-          else if (res.user.role === "Administrator")
-            navigate("/admin/dashboard");
+          else if (res.user.role === "Admin") navigate("/admin/dashboard");
           else navigate("/dashboard");
         }
       } catch {
@@ -97,7 +96,7 @@ export default function LoginPage() {
       if (res.user.role === "Student") navigate("/student/dashboard");
       else if (res.user.role === "Tutor") navigate("/tutor/dashboard");
       else if (res.user.role === "Staff") navigate("/staff/dashboard");
-      else if (res.user.role === "Administrator") navigate("/admin/dashboard");
+      else if (res.user.role === "Admin") navigate("/admin/dashboard");
       else navigate("/dashboard");
     } catch (err: any) {
       setError(err.message || "Login failed");
