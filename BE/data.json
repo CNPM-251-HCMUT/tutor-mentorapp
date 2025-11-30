@@ -70,7 +70,7 @@
       "id": 7,
       "username": "admin",
       "password": "123",
-      "role": "Administrator",
+      "role": "Admin",
       "name": "Admin System",
       "email": "admin@hcmut.edu.vn"
     },
