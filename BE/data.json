@@ -1,0 +1,204 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "username": "student1",
+      "password": "123",
+      "role": "Student",
+      "name": "Nguyễn Văn A",
+      "email": "student1@hcmut.edu.vn",
+      "major": "Computer Science",
+      "year": 3
+    },
+    {
+      "id": 2,
+      "username": "student2",
+      "password": "123",
+      "role": "Student",
+      "name": "Trần Thị B",
+      "email": "student2@hcmut.edu.vn",
+      "major": "Computer Engineering",
+      "year": 2
+    },
+    {
+      "id": 3,
+      "username": "student3",
+      "password": "123",
+      "role": "Student",
+      "name": "Lê Văn C",
+      "email": "student3@hcmut.edu.vn",
+      "major": "Software Engineering",
+      "year": 2
+    },
+    {
+      "id": 4,
+      "username": "tutor1",
+      "password": "123",
+      "role": "Tutor",
+      "name": "Gia Sư Nguyễn X",
+      "email": "tutor1@hcmut.edu.vn",
+      "skills": ["Python", "Data Structures", "Algorithms"],
+      "bio": "5 years experience in teaching DSA",
+      "rating": 4.8,
+      "available": true
+    },
+    {
+      "id": 5,
+      "username": "tutor2",
+      "password": "123",
+      "role": "Tutor",
+      "name": "Gia Sư Trần Y",
+      "email": "tutor2@hcmut.edu.vn",
+      "skills": ["Web Development", "React", "Node.js"],
+      "bio": "Full-stack developer and mentor",
+      "rating": 4.5,
+      "available": true
+    },
+    {
+      "id": 6,
+      "username": "tutor3",
+      "password": "123",
+      "role": "Tutor",
+      "name": "Gia Sư Lê Z",
+      "email": "tutor3@hcmut.edu.vn",
+      "skills": ["Database", "SQL", "System Design"],
+      "bio": "Database expert with 3 years teaching",
+      "rating": 4.9,
+      "available": false
+    },
+    {
+      "id": 7,
+      "username": "admin",
+      "password": "123",
+      "role": "Administrator",
+      "name": "Admin System",
+      "email": "admin@hcmut.edu.vn"
+    }
+  ],
+  "groups": [
+    {
+      "id": 1,
+      "name": "Nhóm DSA 01",
+      "topic": "Data Structures and Algorithms",
+      "description": "Study group for DSA course",
+      "leader_id": 1,
+      "members": [1, 2],
+      "capacity": 5,
+      "tutor_id": 4,
+      "status": "active",
+      "created_at": "2025-01-15T10:00:00"
+    },
+    {
+      "id": 2,
+      "name": "Nhóm Web Dev",
+      "topic": "Web Development",
+      "description": "Learning modern web technologies",
+      "leader_id": 3,
+      "members": [3],
+      "capacity": 4,
+      "tutor_id": null,
+      "status": "active",
+      "created_at": "2025-01-20T14:00:00"
+    },
+    {
+      "id": 3,
+      "name": "Nhóm Database",
+      "topic": "Database Management",
+      "description": "Advanced SQL and database design",
+      "leader_id": 2,
+      "members": [2],
+      "capacity": 3,
+      "tutor_id": null,
+      "status": "active",
+      "created_at": "2025-01-22T09:00:00"
+    }
+  ],
+  "schedules": [
+    {
+      "id": 1,
+      "group_id": 1,
+      "tutor_id": 4,
+      "title": "DSA Session 1: Arrays and Linked Lists",
+      "time": "2025-11-28T14:00:00",
+      "duration": 120,
+      "room": "Room 101",
+      "floor": "1",
+      "building": "H1",
+      "link": "https://meet.google.com/abc-defg-hij",
+      "type": "online",
+      "status": "scheduled",
+      "created_at": "2025-11-20T10:00:00"
+    },
+    {
+      "id": 2,
+      "group_id": 1,
+      "tutor_id": 4,
+      "title": "DSA Session 2: Trees and Graphs",
+      "time": "2025-12-05T14:00:00",
+      "duration": 120,
+      "room": "Room 102",
+      "floor": "1",
+      "building": "H1",
+      "link": null,
+      "type": "offline",
+      "status": "scheduled",
+      "created_at": "2025-11-20T10:05:00"
+    }
+  ],
+  "requests": [
+    {
+      "id": 1,
+      "group_id": 2,
+      "tutor_id": 5,
+      "student_id": 3,
+      "message": "We would like you to be our mentor for web development",
+      "status": "pending",
+      "created_at": "2025-11-25T10:00:00",
+      "updated_at": "2025-11-25T10:00:00"
+    },
+    {
+      "id": 2,
+      "group_id": 3,
+      "tutor_id": 6,
+      "student_id": 2,
+      "message": "Need help with database design project",
+      "status": "pending",
+      "created_at": "2025-11-26T15:30:00",
+      "updated_at": "2025-11-26T15:30:00"
+    }
+  ],
+  "feedback": [
+    {
+      "id": 1,
+      "schedule_id": 1,
+      "student_id": 1,
+      "tutor_id": 4,
+      "rating": 5,
+      "comment": "Very clear explanation, learned a lot!",
+      "created_at": "2025-11-28T16:30:00"
+    },
+    {
+      "id": 2,
+      "schedule_id": 1,
+      "student_id": 2,
+      "tutor_id": 4,
+      "rating": 4,
+      "comment": "Good session, would appreciate more examples",
+      "created_at": "2025-11-28T16:35:00"
+    }
+  ],
+  "progress": [
+    {
+      "id": 1,
+      "group_id": 1,
+      "tutor_id": 4,
+      "schedule_id": 1,
+      "date": "2025-11-28",
+      "attendance": [1, 2],
+      "notes": "Covered arrays and linked lists basics. Students understood well.",
+      "topics_covered": ["Arrays", "Linked Lists", "Time Complexity"],
+      "progress_level": "good",
+      "created_at": "2025-11-28T16:00:00"
+    }
+  ]
+}
