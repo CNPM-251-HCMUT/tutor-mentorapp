@@ -33,37 +33,74 @@ export default function Navbar() {
 
   const prefix = role ? `/${role.toLowerCase()}` : "";
 
+  /* ---------------------------------------------
+     MENU THEO ROLE
+  ----------------------------------------------*/
+
+  const renderMenu = () => {
+    if (!role) return null;
+
+    /* ---- ADMIN: chỉ 3 mục ---- */
+    if (role === "Admin") {
+      return (
+        <>
+          <NavLink to={`${prefix}/dashboard`}>{t.dashboard}</NavLink>
+          <NavLink to={`${prefix}/users`}>{t.usermanagement}</NavLink>
+          <NavLink to={`${prefix}/policies`}>{t.policies}</NavLink>
+        </>
+      );
+    }
+
+    /* ---- STUDENT ---- */
+    if (role === "Student") {
+      return (
+        <>
+          <NavLink to={`${prefix}/dashboard`}>{t.dashboard}</NavLink>
+          <NavLink to={`${prefix}/groups`}>{t.groups}</NavLink>
+          <NavLink to={`${prefix}/classes`}>{t.classes}</NavLink>
+          <NavLink to={`${prefix}/tutors`}>{t.tutors}</NavLink>
+          <NavLink to={`${prefix}/documents`}>{t.documents}</NavLink>
+          <NavLink to={`${prefix}/feedback`}>{t.feedback}</NavLink>
+        </>
+      );
+    }
+
+    /* ---- TUTOR ---- */
+    if (role === "Tutor") {
+      return (
+        <>
+          <NavLink to={`${prefix}/dashboard`}>{t.dashboard}</NavLink>
+          <NavLink to={`${prefix}/schedule`}>{t.schedules}</NavLink>
+          <NavLink to={`${prefix}/classes`}>{t.classes}</NavLink>
+          <NavLink to={`${prefix}/progress`}>{t.progress}</NavLink>
+          <NavLink to={`${prefix}/documents`}>{t.documents}</NavLink>
+          <NavLink to={`${prefix}/feedback`}>{t.feedback}</NavLink>
+        </>
+      );
+    }
+
+    /* ---- STAFF ---- */
+    if (role === "Staff") {
+      return (
+        <>
+          <NavLink to={`${prefix}/dashboard`}>{t.dashboard}</NavLink>
+          <NavLink to={`${prefix}/reports`}>{t.reports}</NavLink>
+          <NavLink to={`${prefix}/monitoring`}>{t.monitoring}</NavLink>
+        </>
+      );
+    }
+  };
+
   return (
     <>
       <div className="w-full bg-white shadow-sm">
         <nav className="w-full px-8 py-2 flex items-center bg-white shadow-sm gap-10">
+          
           <img src="/bklogo.png" className="h-12" />
 
-          {/* MENU */}
+          {/* MENU THEO ROLE */}
           <div className="flex items-center gap-8 text-sm">
-
-            {/* Dashboard */}
-            <NavLink to={`${prefix}/dashboard`}>{t.dashboard}</NavLink>
-
-            {/* SCHEDULES → GROUPS for STUDENT */}
-            {role === "Student" ? (
-              <NavLink to={`${prefix}/groups`}>{t.groups}</NavLink>
-            ) : (
-              <NavLink to={`${prefix}/schedule`}>{t.schedules}</NavLink>
-            )}
-
-            {/* Classes */}
-            <NavLink to={`${prefix}/classes`}>{t.classes}</NavLink>
-
-            {/* Tutors/Progress */}
-            {role === "Student" ? (
-              <NavLink to={`${prefix}/tutors`}>{t.tutors}</NavLink>
-            ) : (
-              <NavLink to={`${prefix}/progress`}>{t.progress}</NavLink>
-            )}
-
-            <NavLink to={`${prefix}/documents`}>{t.documents}</NavLink>
-            <NavLink to={`${prefix}/feedback`}>{t.feedback}</NavLink>
+            {renderMenu()}
           </div>
 
           {/* RIGHT SIDE */}
@@ -85,6 +122,7 @@ export default function Navbar() {
                 className="w-7 h-7 cursor-pointer"
                 onClick={() => setOpenMenu((p) => !p)}
               />
+
               {openMenu && (
                 <div className="absolute right-0 mt-2 w-40 border bg-white rounded shadow-md z-50">
                   <button
@@ -93,6 +131,7 @@ export default function Navbar() {
                   >
                     {t.settings}
                   </button>
+
                   <button
                     className="w-full px-4 py-2 text-red-600 hover:bg-gray-100"
                     onClick={handleLogout}
@@ -105,7 +144,6 @@ export default function Navbar() {
           </div>
         </nav>
 
-        {/* TITLE BAR */}
         <div className="px-8 pb-3 flex items-center gap-3 pt-2">
           <h1 className="text-lg font-semibold">{t.program}</h1>
           {role && (
