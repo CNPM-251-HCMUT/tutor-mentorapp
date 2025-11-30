@@ -279,6 +279,15 @@ def delete_schedule(schedule_id):
 
     return jsonify({"message": "Xoá lịch thành công"})
 
+@app.route("/tutors/<int:tutor_id>/feedbacks", methods=["GET"])
+def get_tutor_feedbacks(tutor_id):
+    feedbacks = data_manager.get_feedback_by_tutor(tutor_id)
+    return jsonify(feedbacks)
+
+@app.route("/tutors/<int:tutor_id>/schedules", methods=["GET"])
+def get_tutor_schedules_api(tutor_id):
+    schedules = data_manager.get_schedules_by_tutor(tutor_id)
+    return jsonify(schedules)
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
