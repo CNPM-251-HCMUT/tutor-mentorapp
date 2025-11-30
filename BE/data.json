@@ -73,6 +73,14 @@
       "role": "Administrator",
       "name": "Admin System",
       "email": "admin@hcmut.edu.vn"
+    },
+    {
+      "id": 8,
+      "username": "staff",
+      "password": "123",
+      "role": "Staff",
+      "name": "Staff System",
+      "email": "staff@hcmut.edu.vn"
     }
   ],
   "groups": [
