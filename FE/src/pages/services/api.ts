@@ -23,7 +23,7 @@ export interface User {
   id: number;
   username: string;
   password?: string;
-  role: 'Student' | 'Tutor' | 'Administrator' | 'Staff';
+  role: 'Student' | 'Tutor' | 'Admin' | 'Staff';
   name: string;
   email: string;
 
