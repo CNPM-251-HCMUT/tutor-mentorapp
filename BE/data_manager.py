@@ -256,5 +256,19 @@ def handle_request(request_id, action):
 
     return False, "Không tìm thấy yêu cầu"
 
+def get_feedback_by_tutor(tutor_id):
+    data = load_data()
+    
+    feedbacks = [f for f in data.get('feedback', []) if f.get('tutor_id') == tutor_id]
+    
+    for fb in feedbacks:
+        student = get_user_by_id(fb['student_id'])
+        fb['student_name'] = student['name'] if student else f"Student #{fb['student_id']}"
+        
+    return feedbacks
 
+
+def get_schedules_by_tutor(tutor_id):
+    data = load_data()
+    return [s for s in data.get('schedules', []) if s.get('tutor_id') == tutor_id]
 
