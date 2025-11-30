@@ -6,9 +6,9 @@
 
 3/ venv/Scripts/activate
 
-4/ pip install requirement.txt (nếu chưa cài thư viện)
+4/ pip install requirements.txt (nếu chưa cài thư viện)
 
-5/ py main.py để chạy backend
+5/ py run.py để chạy backend
 
 
 
