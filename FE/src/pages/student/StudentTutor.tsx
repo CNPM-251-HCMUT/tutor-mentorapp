@@ -247,6 +247,17 @@
     return (
       <div style={styles.container}>
 
+        <style>
+      {`
+        .btn-hover-effect {
+          transition: all 0.2s ease-in-out;
+        }
+        .btn-hover-effect:hover {
+          transform: translateY(-3px);  /* Nổi lên trên 3px */
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); /* Đổ bóng mờ phía dưới */
+        }
+      `}
+    </style>
 
         <main style={styles.mainContent}>
           
@@ -272,7 +283,7 @@
                       <option value="Dong Hoa Campus">Dong Hoa Campus</option>
                   </select>
               </div>
-              <button style={styles.btnRecommend} onClick={handleRecommendTutor}>
+              <button style={styles.btnRecommend} className="btn-hover-effect" onClick={handleRecommendTutor}>
                   <span style={{marginRight: '5px'}}>⭐</span> Recommended Tutor
               </button>
           </div>
@@ -301,8 +312,8 @@
                       <div style={{flexGrow: 1, minHeight: '20px'}}></div>
 
                       <div style={styles.actionRow}>
-                          <button style={styles.btnView} onClick={() => handleViewDetails(tutor)}>View Details</button>
-                          <button style={styles.btnRequest} onClick={() => handleOpenRequestModal(tutor)}>Request Tutor</button>
+                          <button style={styles.btnView} className="btn-hover-effect" onClick={() => handleViewDetails(tutor)}>View Details</button>
+                          <button style={styles.btnRequest} className="btn-hover-effect" onClick={() => handleOpenRequestModal(tutor)}>Request Tutor</button>
                       </div>
                   </div>
               ))}
@@ -393,8 +404,8 @@
               </div>
 
               <div style={styles.modalFooter}>
-                  <button style={styles.btnOutline} onClick={closeDetailsModal}>Đóng</button>
-                  <button style={styles.btnRequestModal} onClick={() => handleOpenRequestModal(selectedTutor)}>Yêu cầu gia sư</button>
+                  <button style={styles.btnOutline} className="btn-hover-effect" onClick={closeDetailsModal}>Đóng</button>
+                  <button style={styles.btnRequestModal} className="btn-hover-effect" onClick={() => handleOpenRequestModal(selectedTutor)}>Yêu cầu gia sư</button>
               </div>
             </div>
           </div>
@@ -417,7 +428,7 @@
                                   <p style={{margin: '0 0 5px 0', fontSize: '13px', color: '#6b7280'}}>{group.topic}</p>
                                   <div style={{fontSize: '13px', color: '#6b7280'}}>👥 {group.memberCount} thành viên</div>
                               </div>
-                              <button style={styles.btnConfirmRequest} onClick={() => handleConfirmRequest(group)}>Xác nhận</button>
+                              <button style={styles.btnConfirmRequest} className="btn-hover-effect" onClick={() => handleConfirmRequest(group)}>Xác nhận</button>
                           </div>
                       ))}
                   </div>
@@ -456,7 +467,7 @@
                     /* Bước 2: Hiển thị kết quả AI */
                     <>
                         <div style={{display: 'flex', alignItems: 'center', marginBottom: '15px'}}>
-                            <button onClick={() => setSelectedGroupForRecommend(null)} style={{background: 'none', border: 'none', cursor: 'pointer', marginRight: '10px', fontSize: '16px'}}>⬅️ Back</button>
+                            <button className="btn-hover-effect" onClick={() => setSelectedGroupForRecommend(null)} style={{background: 'white', border: 'none', borderRadius: "6px", cursor: 'pointer', marginRight: '10px', fontSize: '16px'}}>⬅️ Back</button>
                             <p style={{margin: 0, fontWeight: '600'}}>Results for: {selectedGroupForRecommend.name}</p>
                         </div>
 
@@ -470,7 +481,7 @@
                                     <p style={{textAlign: 'center'}}>No suitable tutors found.</p>
                                 ) : (
                                     recommendedTutors.map((tutor) => (
-                                        <div key={tutor.id} style={styles.recommendCard}>
+                                        <div key={tutor.id} className="btn-hover-effect" style={styles.recommendCard}>
                                             <div style={{display: 'flex', alignItems: 'center', gap: '15px'}}>
                                                 {/* Hiển thị điểm số phù hợp */}
                                                 <div style={styles.matchScoreCircle}>
@@ -484,6 +495,7 @@
                                             {/* Tái sử dụng hàm handleConfirmRequest cũ để gửi yêu cầu */}
                                             <button 
                                                 style={styles.btnConfirmRequest} 
+                                                className="btn-hover-effect"
                                                 onClick={() => {
                                                     setRequestTutor(tutor); // Set tạm tutor để hàm confirm dùng
                                                     handleConfirmRequest(selectedGroupForRecommend);
@@ -591,8 +603,8 @@ const styles = {
     width: '50px',
     height: '50px',
     borderRadius: '50%',
-    backgroundColor: '#dbeafe', // Xanh nhạt
-    color: '#1e40af', // Xanh đậm
+    backgroundColor: '#dbeafe', 
+    color: '#1e40af', 
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
@@ -601,4 +613,5 @@ const styles = {
     border: '2px solid #2563eb'
   }
 };
+
 
