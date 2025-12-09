@@ -15,6 +15,7 @@ export const navbarText = {
     policies: "POLICIES",
     reports: "REPORTS",
     monitoring : "MONITORING",
+    profile: "Profile",
   },
 
   vi: {
@@ -33,5 +34,6 @@ export const navbarText = {
     groups: "Nhóm học",
     settings: "Cài đặt",
     logout: "Đăng xuất",
+    profile: "Hồ sơ",
   },
 };
