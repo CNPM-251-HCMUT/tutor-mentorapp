@@ -52,7 +52,17 @@ export default function StudentDocuments() {
 
   return (
     <div style={styles.container}>
-      
+      <style>
+      {`
+        .btn-hover-effect {
+          transition: all 0.2s ease-in-out;
+        }
+        .btn-hover-effect:hover {
+          transform: translateY(-3px);  /* Nổi lên trên 3px */
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); /* Đổ bóng mờ phía dưới */
+        }
+      `}
+    </style>
       <main style={styles.mainContent}>
         
         <div style={styles.headerSection}>
@@ -113,10 +123,10 @@ export default function StudentDocuments() {
                         </span>
                     </div>
                     <div style={styles.colActions}>
-                        <button style={styles.actionBtn} onClick={() => handleOpen(doc.name)}>
+                        <button style={styles.actionBtn} className="btn-hover-effect" onClick={() => handleOpen(doc.name)}>
                             <span style={{marginRight: '5px'}}>↗</span> Open
                         </button>
-                        <button style={styles.actionBtn} onClick={() => handleDownload(doc.name)}>
+                        <button style={styles.actionBtn} className="btn-hover-effect" onClick={() => handleDownload(doc.name)}>
                             <span style={{marginRight: '5px'}}>📥</span> Download
                         </button>
                     </div>
@@ -201,3 +211,4 @@ const styles = {
     alignItems: "center",
   }
 };
+
