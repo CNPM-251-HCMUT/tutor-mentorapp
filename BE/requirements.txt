@@ -3,3 +3,4 @@ sqlalchemy
 flask-sqlalchemy
 flask-cors
 PyJWT
+sentence-transformers scikit-learn
