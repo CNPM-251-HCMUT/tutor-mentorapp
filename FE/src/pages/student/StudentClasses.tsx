@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect } from 'react'
 
 // --- 1. ĐỊNH NGHĨA CÁC INTERFACE ---
@@ -36,6 +34,7 @@ interface ScheduleItem {
   mode: string;
   link: string;
 }
+
 
 const API_URL = 'http://localhost:5000'; 
 
@@ -145,7 +144,17 @@ export default function StudentClasses() {
 
   return (
     <div style={styles.container}>
-      
+      <style>
+      {`
+        .btn-hover-effect {
+          transition: all 0.2s ease-in-out;
+        }
+        .btn-hover-effect:hover {
+          transform: translateY(-3px);  /* Nổi lên trên 3px */
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); /* Đổ bóng mờ phía dưới */
+        }
+      `}
+    </style>
       <main style={styles.mainContent}>
         <div style={styles.header}>
           <div>
@@ -184,17 +193,17 @@ export default function StudentClasses() {
                  <span style={styles.tag}>{item.tag}</span>
               </div>
               <div style={styles.tutorSection}>
-                <p style={styles.tutorName}>{item.tutorName}</p>
-                <span style={styles.tutorLabel}>Tutor</span>
+                <p style={styles.tutorName}><span style={styles.mkt}> Class's Tutor:</span>{item.tutorName}</p>
+                {/* <span style={styles.tutorLabel}>Tutor</span> */}
               </div>
               <div style={styles.statsRow}>
-                <div style={styles.statItem}><span style={styles.statIcon}>👥</span> {item.studentCount}</div>
-                <div style={styles.statItem}><span style={styles.statIcon}>📄</span> {item.docCount}</div>
-                <div style={styles.statItem}><span style={styles.statIcon}>📅</span> {item.sessionCount}</div>
+                <div style={styles.statItem}><span style={styles.mkt}> Members 👥:</span> {item.studentCount}</div>
+                <div style={styles.statItem}><span style={styles.mkt}> Documents 📄:</span> {item.docCount}</div> 
+                <div style={styles.statItem}><span style={styles.mkt}> Schedule 📅:</span> {item.sessionCount}</div>
               </div>
               <div style={{ flexGrow: 1 }}></div>
               
-              <button style={styles.btnView} onClick={() => handleViewClass(item)}>
+              <button style={styles.btnView} className="btn-hover-effect" onClick={() => handleViewClass(item)}>
                  <span style={{marginRight: "8px"}}>👁️</span> View Class
               </button>
             </div>
@@ -249,9 +258,9 @@ export default function StudentClasses() {
                             <p style={styles.docMeta}>{doc.date} {doc.size && `• ${doc.size}`}</p>
                          </div>
                          <div style={{display: 'flex', gap: '10px', alignItems: 'center'}}>
-                            <button style={styles.btnOutline} onClick={() => handleOpenDoc(doc.title)}>Open</button>
+                            <button style={styles.btnOutline} className="btn-hover-effect" onClick={() => handleOpenDoc(doc.title)}>Open</button>
                             {doc.type === 'pdf' && (
-                               <button style={styles.btnPrimary} onClick={() => handleDownloadDoc(doc.title)}>Download</button>
+                               <button style={styles.btnPrimary} className="btn-hover-effect" onClick={() => handleDownloadDoc(doc.title)}>Download</button>
                             )}
                          </div>
                       </div>
@@ -288,7 +297,7 @@ export default function StudentClasses() {
             </div>
              
              <div style={styles.modalFooter}>
-                 <button style={styles.btnOutline} onClick={closeViewModal}>Close</button>
+                 <button style={styles.btnOutline} className="btn-hover-effect" onClick={closeViewModal}>Close</button>
              </div>
 
           </div>
@@ -316,9 +325,9 @@ const styles = {
   cardHeader: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "10px" },
   groupName: { margin: 0, fontSize: "18px", fontWeight: "600" },
   statusBadge: { backgroundColor: "#0f172a", color: "white", fontSize: "12px", padding: "4px 12px", borderRadius: "16px", fontWeight: "600" },
-  tag: { display: "inline-block", backgroundColor: "#f3f4f6", border: "1px solid #e5e7eb", padding: "4px 12px", borderRadius: "6px", fontSize: "12px", color: "#374151" },
+  tag: { display: "inline-block", backgroundColor: "#f3f4f6", border: "1px solid #e5e7eb", padding: "4px 12px", borderRadius: "6px", fontSize: "12px", color: "#374151", fontWeight: "bold" },
   tutorSection: { marginBottom: "20px" },
-  tutorName: { fontSize: "16px", fontWeight: "600", margin: "0 0 4px 0", color: "#1f2937" },
+  tutorName: { fontSize: "16px", margin: "0 0 4px 0", color: "#1f2937" },
   tutorLabel: { fontSize: "13px", color: "#6b7280" },
   statsRow: { display: "flex", gap: "20px", marginBottom: "25px", color: "#6b7280", fontSize: "14px" },
   statItem: { display: "flex", alignItems: "center", gap: "6px" },
@@ -346,5 +355,7 @@ const styles = {
   schText: { margin: "0 0 5px 0", fontSize: "13px", color: "#4b5563" },
   btnOutline: { padding: "8px 16px", border: "1px solid #e5e7eb", backgroundColor: "white", borderRadius: "6px", cursor: "pointer", fontSize: "13px", fontWeight: "600", color: "#374151" },
   btnPrimary: { padding: "8px 16px", border: "none", backgroundColor: "#0f172a", borderRadius: "6px", cursor: "pointer", fontSize: "13px", fontWeight: "600", color: "white" },
-  modalFooter: { marginTop: "20px", display: "flex", justifyContent: "flex-end" }
+  modalFooter: { marginTop: "20px", display: "flex", justifyContent: "flex-end" },
+
+  mkt: {color: "black", fontWeight: "bold", marginRight: "5px"},
 };
