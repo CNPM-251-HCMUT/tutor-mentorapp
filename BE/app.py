@@ -89,6 +89,15 @@ def get_groups():
         filters['has_tutor'] = has_tutor.lower() == 'true'
 
     groups = data_manager.get_groups(filters if filters else None)
+
+    # lấy tên Leader
+    for group in groups:
+        leader_id = group.get('leader_id')
+        if leader_id:
+            leader = data_manager.get_user_by_id(leader_id)
+            group['leader_name'] = leader['name'] if leader else "Unknown"
+        else:
+            group['leader_name'] = "Unknown"
     return jsonify(groups)
 
 #Tao nhom
