@@ -28,6 +28,17 @@ export default function StudentDashboard() {
 
   return (
     <div style={styles.container}>   
+      <style>
+      {`
+        .btn-hover-effect {
+          transition: all 0.2s ease-in-out;
+        }
+        .btn-hover-effect:hover {
+          transform: translateY(-3px);  /* Nổi lên trên 3px */
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); /* Đổ bóng mờ phía dưới */
+        }
+      `}
+    </style>
       <main style={styles.mainContent}>
         
         <div style={styles.welcomeSection}>
@@ -40,44 +51,47 @@ export default function StudentDashboard() {
         </div>
     
         <div style={styles.gridContainer}>
-          <div style={styles.card}>
+          <div style={styles.card} className="btn-hover-effect">
             <div style={styles.cardHeader}>
               <span style={{...styles.icon, color: '#2563eb'}}>👥</span>
               <h3 style={styles.cardTitle}>My Groups</h3>
             </div>
             <p style={styles.cardMeta}>Details about available groups</p>
             <div style={styles.spacer}></div>
-            <button style={styles.buttonOutline}
+            <button style={styles.buttonOutline} className="btn-hover-effect"
                            onClick={() => navigate("/student/groups")}>View Details</button>
           </div>
-          <div style={styles.card}>
+
+          <div style={styles.card} className="btn-hover-effect">
             <div style={styles.cardHeader}>
               <span style={{...styles.icon, color: '#16a34a'}}>📖</span>
               <h3 style={styles.cardTitle}>Find Tutors</h3>
             </div>
             <p style={styles.cardMeta}>Find suitable tutors for your experience</p>
             <div style={styles.spacer}></div>
-            <button style={styles.buttonOutline}
+            <button style={styles.buttonOutline} className="btn-hover-effect"
                            onClick={() => navigate("/student/tutors")}>Search tutors</button>
           </div>
-          <div style={styles.card}>
+
+          <div style={styles.card} className="btn-hover-effect">
             <div style={styles.cardHeader}>
               <span style={{...styles.icon, color: '#9333ea'}}>📄</span>
               <h3 style={styles.cardTitle}>View Documents</h3>
             </div>
             <p style={styles.cardMeta}>Free study materials provided by users</p>
             <div style={styles.spacer}></div>
-            <button style={styles.buttonOutline}
+            <button style={styles.buttonOutline} className="btn-hover-effect"
                            onClick={() => navigate("/student/documents")}>View Details</button>
           </div>
-          <div style={styles.card}>
+
+          <div style={styles.card} className="btn-hover-effect">
             <div style={styles.cardHeader}>
               <span style={{...styles.icon, color: '#2563eb'}}>⭐</span>
               <h3 style={styles.cardTitle}>Give feedback</h3>
             </div>
             <p style={styles.cardMeta}>Rate your sessions and tutors</p>
             <div style={styles.spacer}></div>
-            <button style={styles.buttonOutline}
+            <button style={styles.buttonOutline} className="btn-hover-effect"
                            onClick={() => navigate("/student/feedback")}>Details</button>
           </div>
         </div>
