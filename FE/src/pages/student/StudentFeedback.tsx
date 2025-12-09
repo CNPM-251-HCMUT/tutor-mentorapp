@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-
+import Logbar from './Logbar'; 
 interface ClassItem {
   id: number;
   name: string;
@@ -8,6 +8,12 @@ interface ClassItem {
 interface StarRatingProps {
   rating: number;
   setRating: (rating: number) => void;
+}
+
+// Interface cho state của Toast
+interface ToastState {
+  message: string;
+  type: 'success' | 'error';
 }
 
 const API_URL = 'http://localhost:5000';
@@ -42,7 +48,14 @@ export default function StudentFeedback() {
   }, []);
 
 
+  // --- 1. STATE MỚI CHO LOGBAR ---
+    const [toast, setToast] = useState<ToastState | null>(null);
   
+    // --- 2. HÀM HELPER ĐỂ HIỆN LOGBAR ---
+    const showToast = (message: string, type: 'success' | 'error') => {
+      setToast({ message, type });
+    };
+
   const handleCancel = () => {
     setSelectedGroup("");
     setSessionRating(0);
@@ -52,7 +65,7 @@ export default function StudentFeedback() {
 
   const handleSend = () => {
     if (!selectedGroup || sessionRating === 0 || tutorRating === 0) {
-      alert("Vui lòng điền đầy đủ thông tin (Nhóm và Đánh giá sao).");
+      showToast("Vui lòng điền đầy đủ thông tin (Nhóm và Đánh giá sao).", 'error');
       return;
     }
     console.log("Sending Feedback:", {
@@ -61,7 +74,7 @@ export default function StudentFeedback() {
         tutor_rating: tutorRating,
         comment: comment
     });
-    alert("Feedback sent successfully!");
+    showToast("Feedback sent successfully!", 'success');
     handleCancel(); 
   };
 
@@ -107,7 +120,7 @@ export default function StudentFeedback() {
                         onChange={(e) => setSelectedGroup(e.target.value)}
                     >
                         <option value="" disabled>Select a group..</option>
-                        {classes.length === 0 && <option disabled>No classes available (Join a group first)</option>}
+                        {classes.length === 0 && <option disabled>No classes available</option>}
                         {classes.map(cls => (
                             <option key={cls.id} value={cls.id}>{cls.name}</option>
                         ))}
@@ -160,6 +173,14 @@ export default function StudentFeedback() {
         </div>
 
       </main>
+
+      {toast && (
+        <Logbar 
+          message={toast.message} 
+          type={toast.type} 
+          onClose={() => setToast(null)} 
+        />
+      )}
     </div>
   );
 }
