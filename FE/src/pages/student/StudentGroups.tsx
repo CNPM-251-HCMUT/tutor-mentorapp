@@ -193,6 +193,18 @@ export default function StudentGroups() {
   return (
     <div style={styles.container}>
       
+      <style>
+      {`
+        .btn-hover-effect {
+          transition: all 0.2s ease-in-out;
+        }
+        .btn-hover-effect:hover {
+          transform: translateY(-3px);  /* Nổi lên trên 3px */
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); /* Đổ bóng mờ phía dưới */
+        }
+      `}
+    </style>
+
       <main style={styles.mainContent}>
         <div style={styles.header}>
           <div>
@@ -201,7 +213,7 @@ export default function StudentGroups() {
               <p style={styles.subTitle}>Find and join Study groups</p>
             </div>
           </div>
-          <button style={styles.createButton} onClick={toggleModal}>+ Create Group</button>
+          <button style={styles.createButton} className="btn-hover-effect" onClick={toggleModal}>+ Create Group</button>
         </div>
 
         <div style={styles.searchContainer}>
@@ -242,9 +254,9 @@ export default function StudentGroups() {
               <div style={{ flexGrow: 1 }}></div>
 
               {group.joined ? (
-                <button style={styles.btnLeave} onClick={() => requestLeaveGroup(group)}>Leave</button>
+                <button style={styles.btnLeave} className="btn-hover-effect" onClick={() => requestLeaveGroup(group)}>Leave</button>
               ) : (
-                <button style={styles.btnJoin} onClick={() => handleJoinGroup(group.id)}>Join</button>
+                <button style={styles.btnJoin} className="btn-hover-effect" onClick={() => handleJoinGroup(group.id)}>Join</button>
               )}
             </div>
           ))}
@@ -263,8 +275,8 @@ export default function StudentGroups() {
             <div style={styles.formGroup}><label style={styles.label}>Topic*</label><input style={styles.input} name="topic" value={formData.topic} onChange={handleInputChange}/></div>
             <div style={styles.formGroup}><label style={styles.label}>Desc*</label><textarea style={styles.textarea} name="description" value={formData.description} onChange={handleInputChange}/></div>
             <div style={styles.modalFooter}>
-              <button style={styles.btnCancel} onClick={toggleModal}>Cancel</button>
-              <button style={styles.btnCreate} onClick={handleCreateGroup}>Create</button>
+              <button style={styles.btnCancel} className="btn-hover-effect" onClick={toggleModal}>Cancel</button>
+              <button style={styles.btnCreate} className="btn-hover-effect" onClick={handleCreateGroup}>Create</button>
             </div>
           </div>
         </div>
@@ -288,8 +300,8 @@ export default function StudentGroups() {
             </p>
 
             <div style={styles.modalFooter}>
-              <button style={styles.btnCancel} onClick={() => setConfirmModal({isOpen: false, group: null})}>Cancel</button>
-              <button style={{...styles.btnCreate, backgroundColor: "#ef4444"}} onClick={processLeaveGroup}>Yes, Leave</button>
+              <button style={styles.btnCancel} className="btn-hover-effect" onClick={() => setConfirmModal({isOpen: false, group: null})}>Cancel</button>
+              <button style={{...styles.btnCreate, backgroundColor: "#ef4444"}} className="btn-hover-effect" onClick={processLeaveGroup}>Yes, Leave</button>
             </div>
           </div>
         </div>
@@ -360,5 +372,6 @@ const styles = {
 
   mkt: {color: "black", fontWeight: "bold", marginRight: "5px"},
 };
+
 
 
