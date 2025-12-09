@@ -6,7 +6,7 @@ import json
 API_KEY = "AIzaSyB5t2MUsHRowhIXKZmBeD8ehM33JZ07dt4" # Để project public thì bỏ cái này đi nha, chết tui :))
 genai.configure(api_key=API_KEY)
 
-# Sử dụng model ổn định cho Free Tier
+# Model Free Trial
 model = genai.GenerativeModel('models/gemini-2.5-flash')
 
 # Cache đơn giản để tránh gọi API lại nếu user bấm liên tục 
@@ -120,3 +120,4 @@ def get_recommendations(group, tutors, top_k=3):
     except Exception as e:
         print(f"AI Error: {e}")
         return []
+
