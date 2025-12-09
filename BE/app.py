@@ -289,5 +289,26 @@ def get_tutor_schedules_api(tutor_id):
     schedules = data_manager.get_schedules_by_tutor(tutor_id)
     return jsonify(schedules)
 
+@app.route("/groups/<int:group_id>/recommend-tutors", methods=["GET"])
+def recommend_tutors_for_group(group_id):
+    # 1. Lấy thông tin nhóm hiện tại
+    group = data_manager.get_group_by_id(group_id)
+    if not group:
+        return jsonify({"error": "Không tìm thấy nhóm"}), 404
+        
+    # 2. Lấy danh sách tất cả gia sư đang rảnh 
+    all_tutors = data_manager.get_tutors(filters={'available': True})
+    
+    if not all_tutors:
+        return jsonify([])
+
+    # 3. Gọi AI 
+    try:
+        recommended_list = recommender.get_recommendations(group, all_tutors)
+        return jsonify(recommended_list)
+    except Exception as e:
+        print(f"AI Error: {e}")
+        return jsonify({"error": "Lỗi khi xử lý gợi ý"}), 500
+
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
