@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Logbar from './Logbar'; 
 
 interface Group {
   id: number;
@@ -16,16 +17,30 @@ interface ConfirmModalState {
   group: Group | null;
 }
 
+// Interface cho state của Toast
+interface ToastState {
+  message: string;
+  type: 'success' | 'error';
+}
+
 const API_URL = 'http://localhost:5000';
 
 export default function StudentGroups() {
   const [groups, setGroups] = useState<Group[]>([]);
-  const [currentUser, setCurrentUser] = useState<any>(null); 
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({ name: '', topic: '', description: '' });
   const [confirmModal, setConfirmModal] = useState<ConfirmModalState>({ isOpen: false, group: null });
+
+  // --- 1. STATE MỚI CHO LOGBAR ---
+  const [toast, setToast] = useState<ToastState | null>(null);
+
+  // --- 2. HÀM HELPER ĐỂ HIỆN LOGBAR ---
+  const showToast = (message: string, type: 'success' | 'error') => {
+    setToast({ message, type });
+  };
 
   useEffect(() => {
     const initData = async () => {
@@ -33,13 +48,13 @@ export default function StudentGroups() {
         const meRes = await fetch(`${API_URL}/me`, { credentials: 'include' });
         if (!meRes.ok) {
             console.error("Chưa đăng nhập");
-            return; 
+            return;
         }
         const meData = await meRes.json();
         const user = meData.user;
         setCurrentUser(user);
 
-        fetchGroups(user); 
+        fetchGroups(user);
 
       } catch (error) {
         console.error("Lỗi kết nối backend:", error);
@@ -57,12 +72,14 @@ export default function StudentGroups() {
       const mappedGroups: Group[] = data.map((g: any) => ({
         id: g.id,
         name: g.name,
-        tag: g.topic, 
+        tag: g.topic,
         description: g.description,
-        leaderName: `Leader ID: ${g.leader_id}`, 
+        
+        leaderName: g.leader_name || `ID: ${g.leader_id}`, 
+
         memberCount: g.members.length,
-        isLeader: g.leader_id === user.id, 
-        joined: g.members.includes(user.id) 
+        isLeader: g.leader_id === user.id,
+        joined: g.members.includes(user.id)
       }));
 
       setGroups(mappedGroups);
@@ -71,28 +88,29 @@ export default function StudentGroups() {
     }
   };
 
-
   const filteredGroups = groups.filter((group) =>
     group.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
 
   const handleJoinGroup = async (groupId: number) => {
     try {
       const res = await fetch(`${API_URL}/groups/${groupId}/join`, {
         method: 'POST',
-        credentials: 'include', 
+        credentials: 'include',
       });
       const data = await res.json();
 
       if (res.ok) {
-        alert(data.message);
-        fetchGroups(currentUser); 
+        // --- THAY ALERT ---
+        showToast(data.message, 'success');
+        fetchGroups(currentUser);
       } else {
-        alert(data.error);
+        // --- THAY ALERT ---
+        showToast(data.error, 'error');
       }
     } catch (error) {
       console.error("Lỗi join group:", error);
+      showToast("Lỗi kết nối server", 'error');
     }
   };
 
@@ -112,13 +130,16 @@ export default function StudentGroups() {
       const data = await res.json();
 
       if (res.ok) {
-        alert(data.message);
-        fetchGroups(currentUser); 
+        // --- THAY ALERT ---
+        showToast(data.message, 'success');
+        fetchGroups(currentUser);
       } else {
-        alert(data.error);
+        // --- THAY ALERT ---
+        showToast(data.error, 'error');
       }
     } catch (error) {
       console.error("Lỗi leave group:", error);
+      showToast("Lỗi kết nối server", 'error');
     }
     
     setConfirmModal({ isOpen: false, group: null });
@@ -132,7 +153,7 @@ export default function StudentGroups() {
         name: formData.name,
         topic: formData.topic,
         description: formData.description,
-        leader_id: currentUser.id 
+        leader_id: currentUser.id
       };
 
       const res = await fetch(`${API_URL}/groups`, {
@@ -143,16 +164,19 @@ export default function StudentGroups() {
       });
       
       if (res.ok) {
-        alert("Tạo nhóm thành công!");
+        // --- THAY ALERT ---
+        showToast("Tạo nhóm thành công!", 'success');
         toggleModal();
-        fetchGroups(currentUser); 
+        fetchGroups(currentUser);
       } else {
         const err = await res.json();
-        alert(err.error || "Lỗi tạo nhóm");
+        // --- THAY ALERT ---
+        showToast(err.error || "Lỗi tạo nhóm", 'error');
       }
 
     } catch (error) {
       console.error("Lỗi tạo nhóm:", error);
+      showToast("Lỗi kết nối server khi tạo nhóm", 'error');
     }
   };
 
@@ -208,11 +232,11 @@ export default function StudentGroups() {
                 <span style={styles.tag}>{group.tag}</span>
               </div>
 
-              <p style={styles.description}>{group.description}</p>
+              <p style={styles.description}><span style= {styles.mkt}>Description:</span>{group.description}</p>
 
               <div style={styles.metaInfo}>
-                <div style={styles.metaItem}>👤 {group.leaderName}</div>
-                <div style={styles.metaItem}>👥 {group.memberCount} members</div>
+                  <div style={styles.metaItem}><div style={styles.mkt}>Group Leader 👤:  </div> {group.leaderName}</div>
+                  <div style={styles.metaItem}><div style={styles.mkt}>Member count 👥:</div> {group.memberCount} </div>
               </div>
 
               <div style={{ flexGrow: 1 }}></div>
@@ -270,6 +294,15 @@ export default function StudentGroups() {
           </div>
         </div>
       )}
+
+      {/* --- 3. RENDER LOGBAR Ở CUỐI CÙNG --- */}
+      {toast && (
+        <Logbar 
+          message={toast.message} 
+          type={toast.type} 
+          onClose={() => setToast(null)} 
+        />
+      )}
     </div>
   );
 }
@@ -304,7 +337,7 @@ const styles = {
   titleRow: { display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" },
   groupName: { margin: 0, fontSize: "18px", fontWeight: "600" },
   badgeLeader: { backgroundColor: "#e5e7eb", color: "#374151", fontSize: "12px", padding: "2px 8px", borderRadius: "4px", fontWeight: "600" },
-  tag: { display: "inline-block", backgroundColor: "#f3f4f6", border: "1px solid #e5e7eb", padding: "4px 12px", borderRadius: "16px", fontSize: "12px", color: "#374151", marginTop: "5px" },
+  tag: { display: "inline-block", backgroundColor: "#f3f4f6", border: "1px solid #e5e7eb", padding: "4px 12px", borderRadius: "16px", fontSize: "12px", color: "#374151", marginTop: "5px", fontWeight: "bold" },
   description: { color: "#6b7280", fontSize: "14px", lineHeight: "1.5", marginBottom: "20px" },
   metaInfo: { display: "flex", gap: "20px", marginBottom: "25px", color: "#6b7280", fontSize: "14px" },
   metaItem: { display: "flex", alignItems: "center" },
@@ -323,5 +356,9 @@ const styles = {
   textarea: { width: "100%", padding: "12px", backgroundColor: "#f3f4f6", border: "1px solid transparent", borderRadius: "8px", fontSize: "14px", outline: "none", minHeight: "100px", resize: "vertical" as const, boxSizing: "border-box" as const, fontFamily: "inherit", color: "#111827" },
   modalFooter: { display: "flex", justifyContent: "flex-end", gap: "12px", marginTop: "30px" },
   btnCancel: { padding: "10px 20px", backgroundColor: "white", border: "1px solid #e5e7eb", borderRadius: "6px", cursor: "pointer", fontWeight: "600", color: "#374151" },
-  btnCreate: { padding: "10px 24px", backgroundColor: "#0f172a", color: "white", border: "none", borderRadius: "6px", cursor: "pointer", fontWeight: "600" }
+  btnCreate: { padding: "10px 24px", backgroundColor: "#0f172a", color: "white", border: "none", borderRadius: "6px", cursor: "pointer", fontWeight: "600" },
+
+  mkt: {color: "black", fontWeight: "bold", marginRight: "5px"},
 };
+
+
