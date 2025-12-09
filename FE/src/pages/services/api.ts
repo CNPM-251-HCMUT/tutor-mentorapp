@@ -32,6 +32,8 @@ export interface User {
 
   skills?: string[];
   bio?: string;
+  expertise?: string;
+  location?: string;
   rating?: number;
   available?: boolean;
 }
@@ -53,6 +55,7 @@ export interface Schedule {
   id: number;
   group_id: number;
   tutor_id: number;
+  title: string;
   time: string;   
   duration: number; //Phut
   floor?: string;
@@ -77,6 +80,8 @@ export interface CreateSchedulePayload {
   tutor_id: number;
   time: string; // Format: "YYYY-MM-DD HH:mm"
   link?: string;
+  duration?: number;
+  type?: 'online' | 'offline';
 }
 
 export interface Request {
@@ -135,6 +140,11 @@ export const authApi = { //.data se tra ve mot object json: vd { message: "Login
 
   logout: async () => {
     const response = await api.post('/logout');
+    return response.data;
+  },
+
+  updateProfile: async (data: Partial<User>) => {
+    const response = await api.put<{ message: string; user: User }>('/me/profile', data);
     return response.data;
   }
 };
