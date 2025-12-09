@@ -1,362 +1,519 @@
-import React, { useState, useEffect } from 'react'
+  import React, { useState, useEffect } from 'react'
+  import Logbar from './Logbar'; 
+
+  interface TutorItem {
+    id: number;
+    name: string;
+    rating: number;
+    skills: string[];
+    location: string;
+    mode: string;
+    bio?: string;
+  }
+
+  interface TutorWithScore extends TutorItem {
+    match_score?: number;
+  }
+
+  interface ScheduleItem {
+    id: number;
+    title: string;
+    time: string;     
+    duration: number; 
+    type: string;     
+  }
 
 
-interface TutorItem {
-  id: number;
-  name: string;
-  rating: number;
-  skills: string[];
-  location: string;
-  mode: string;
-  bio?: string;
-}
-
-interface ScheduleItem {
-  id: number;
-  title: string;
-  time: string;     
-  duration: number; 
-  type: string;     
-}
+  interface FeedbackItem {
+    id: number;
+    schedule_id: number;
+    student_id: number;
+    student_name?: string; 
+    tutor_id: number;
+    rating: number;
+    comment: string;
+    created_at: string;
+  }
 
 
-interface FeedbackItem {
-  id: number;
-  schedule_id: number;
-  student_id: number;
-  student_name?: string; 
-  tutor_id: number;
-  rating: number;
-  comment: string;
-  created_at: string;
-}
+  interface MyGroupItem {
+    id: number;
+    name: string;
+    topic: string;
+    memberCount: number;
+  }
+
+  // Interface cho state của Toast
+  interface ToastState {
+    message: string;
+    type: 'success' | 'error';
+  }
+
+  const API_URL = 'http://localhost:5000';
+  const DEFAULT_AVATAR = "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png";
+
+  export default function StudentTutors() {
+    const [tutors, setTutors] = useState<TutorItem[]>([]);
+    const [myGroups, setMyGroups] = useState<MyGroupItem[]>([]);
+    
+    const [tutorReviews, setTutorReviews] = useState<FeedbackItem[]>([]);
+    const [tutorSchedules, setTutorSchedules] = useState<ScheduleItem[]>([]);
 
 
-interface MyGroupItem {
-  id: number;
-  name: string;
-  topic: string;
-  memberCount: number;
-}
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filterType, setFilterType] = useState('All');
+    const [selectedTutor, setSelectedTutor] = useState<TutorItem | null>(null);
+    const [activeTab, setActiveTab] = useState<'overview' | 'schedule' | 'reviews'>('overview');
+    const [requestTutor, setRequestTutor] = useState<TutorItem | null>(null);
 
-const API_URL = 'http://localhost:5000';
-const DEFAULT_AVATAR = "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png";
+    const [showRecommendModal, setShowRecommendModal] = useState(false);
+    const [groupsWithoutTutor, setGroupsWithoutTutor] = useState<MyGroupItem[]>([]);
+    const [recommendedTutors, setRecommendedTutors] = useState<TutorWithScore[]>([]);
+    const [selectedGroupForRecommend, setSelectedGroupForRecommend] = useState<MyGroupItem | null>(null);
+    const [isLoadingAI, setIsLoadingAI] = useState(false);
 
-export default function StudentTutors() {
-  const [tutors, setTutors] = useState<TutorItem[]>([]);
-  const [myGroups, setMyGroups] = useState<MyGroupItem[]>([]);
-  
-  const [tutorReviews, setTutorReviews] = useState<FeedbackItem[]>([]);
-  const [tutorSchedules, setTutorSchedules] = useState<ScheduleItem[]>([]);
-
-
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState('All');
-  const [selectedTutor, setSelectedTutor] = useState<TutorItem | null>(null);
-  const [activeTab, setActiveTab] = useState<'overview' | 'schedule' | 'reviews'>('overview');
-  const [requestTutor, setRequestTutor] = useState<TutorItem | null>(null);
+    // --- 1. STATE MỚI CHO LOGBAR ---
+    const [toast, setToast] = useState<ToastState | null>(null);
+    
+    // --- 2. HÀM HELPER ĐỂ HIỆN LOGBAR ---
+    const showToast = (message: string, type: 'success' | 'error') => {
+      setToast({ message, type });
+    };
 
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const tutorRes = await fetch(`${API_URL}/tutors`);
-        const tutorData = await tutorRes.json();
-        
-        const mappedTutors = tutorData.map((t: any) => ({
-          id: t.id,
-          name: t.name,
-          rating: t.rating || 0,
-          skills: t.skills || [],
-          bio: t.bio || "Chưa có thông tin giới thiệu.",
-          location: "HCMUT - Ly Thuong Kiet Campus", 
-          mode: t.available ? "Online & Offline" : "Busy" 
-        }));
-        setTutors(mappedTutors);
+    useEffect(() => {
+      const fetchData = async () => {
+        try {
+          const tutorRes = await fetch(`${API_URL}/tutors`);
+          const tutorData = await tutorRes.json();
+          
+          const mappedTutors = tutorData.map((t: any) => ({
+            id: t.id,
+            name: t.name,
+            rating: t.rating || 0,
+            skills: t.skills || [],
+            bio: t.bio || "Chưa có thông tin giới thiệu.",
+            location: "HCMUT - Ly Thuong Kiet Campus", 
+            mode: t.available ? "Online & Offline" : "Busy" 
+          }));
+          setTutors(mappedTutors);
 
-        const groupsRes = await fetch(`${API_URL}/my-groups`, { credentials: 'include' });
-        if (groupsRes.ok) {
-            const groupsData = await groupsRes.json();
-            const mappedGroups = groupsData.map((g: any) => ({
-                id: g.id,
-                name: g.name,
-                topic: g.topic,
-                memberCount: g.members ? g.members.length : 0
-            }));
-            setMyGroups(mappedGroups);
+          const groupsRes = await fetch(`${API_URL}/my-groups`, { credentials: 'include' });
+          if (groupsRes.ok) {
+              const groupsData = await groupsRes.json();
+              const mappedGroups = groupsData.map((g: any) => ({
+                  id: g.id,
+                  name: g.name,
+                  topic: g.topic,
+                  memberCount: g.members ? g.members.length : 0
+              }));
+              setMyGroups(mappedGroups);
+          }
+        } catch (error) {
+          console.error("Lỗi tải dữ liệu:", error);
         }
+      };
+      fetchData();
+    }, []);
+
+    const filteredTutors = tutors.filter((tutor) => {
+      const matchesName = tutor.name.toLowerCase().includes(searchTerm.toLowerCase());
+      let matchesFilter = true;
+      if (filterType === 'Online') matchesFilter = tutor.mode.includes('Online');
+      else if (filterType === 'Offline') matchesFilter = tutor.mode.includes('Offline');
+      else if (filterType === 'Ly Thuong Kiet Campus') matchesFilter = tutor.location.includes('Ly Thuong Kiet Campus');
+      else if (filterType === 'Dong Hoa Campus') matchesFilter = tutor.location.includes('Dong Hoa Campus');
+      return matchesName && matchesFilter;
+    });
+
+
+    const handleViewDetails = async (tutor: TutorItem) => {
+      setSelectedTutor(tutor);
+      setActiveTab('overview');
+      
+      setTutorReviews([]);
+      setTutorSchedules([]);
+
+      try {
+          const schRes = await fetch(`${API_URL}/tutors/${tutor.id}/schedules`);
+          if (schRes.ok) setTutorSchedules(await schRes.json());
+
+          const fbRes = await fetch(`${API_URL}/tutors/${tutor.id}/feedbacks`);
+          if (fbRes.ok) setTutorReviews(await fbRes.json());
+
       } catch (error) {
-        console.error("Lỗi tải dữ liệu:", error);
+          console.error("Lỗi tải chi tiết:", error);
       }
     };
-    fetchData();
-  }, []);
 
-  const filteredTutors = tutors.filter((tutor) => {
-    const matchesName = tutor.name.toLowerCase().includes(searchTerm.toLowerCase());
-    let matchesFilter = true;
-    if (filterType === 'Online') matchesFilter = tutor.mode.includes('Online');
-    else if (filterType === 'Offline') matchesFilter = tutor.mode.includes('Offline');
-    return matchesName && matchesFilter;
-  });
+    const closeDetailsModal = () => setSelectedTutor(null);
 
+    const handleOpenRequestModal = (tutor: TutorItem) => {
+      if (myGroups.length === 0) {
+          showToast("Bạn chưa có nhóm nào. Vui lòng tạo nhóm trước khi gửi yêu cầu.", "error");
+          return;
+      }
+      setRequestTutor(tutor);
+      if (selectedTutor) closeDetailsModal();
+    };
 
-  const handleViewDetails = async (tutor: TutorItem) => {
-    setSelectedTutor(tutor);
-    setActiveTab('overview');
-    
-    setTutorReviews([]);
-    setTutorSchedules([]);
+    const closeRequestModal = () => setRequestTutor(null);
 
-    try {
-        const schRes = await fetch(`${API_URL}/tutors/${tutor.id}/schedules`);
-        if (schRes.ok) setTutorSchedules(await schRes.json());
+    const handleConfirmRequest = async (group: MyGroupItem) => {
+      if (!requestTutor) return;
+      try {
+          const res = await fetch(`${API_URL}/groups/${group.id}/request-tutor`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                  tutor_id: requestTutor.id,
+                  message: "Em muốn mời thầy/cô hướng dẫn nhóm này ạ." 
+              }),
+              credentials: 'include'
+          });
+          const data = await res.json();
+          if (res.ok) {
+              showToast("Yêu cầu gia sư đã được gửi!", 'success');
+              closeRequestModal();
+          } else {
+              alert(`Lỗi: ${data.error}`);
+          }
+      } catch (e) { console.error(e); alert("Lỗi kết nối server."); }
+    };
 
-        const fbRes = await fetch(`${API_URL}/tutors/${tutor.id}/feedbacks`);
-        if (fbRes.ok) setTutorReviews(await fbRes.json());
-
-    } catch (error) {
-        console.error("Lỗi tải chi tiết:", error);
-    }
+    const handleRecommendTutor = () => {
+      // Lọc ra các nhóm chưa có Tutor (tạm thời giả định là tất cả myGroups để test)
+      // Trong thực tế bạn có thể check thêm điều kiện nếu backend trả về tutor_id
+      const availableGroups = myGroups; 
+      
+      if (availableGroups.length === 0) {
+          showToast("Bạn chưa tham gia nhóm nào để gợi ý.", "error");
+          return;
+      }
+      
+      setGroupsWithoutTutor(availableGroups);
+      setSelectedGroupForRecommend(null); // Reset lựa chọn cũ
+      setRecommendedTutors([]); // Reset kết quả cũ
+      setShowRecommendModal(true);
   };
 
-  const closeDetailsModal = () => setSelectedTutor(null);
+  const handleGetAIRecommendation = async (group: MyGroupItem) => {
+      setSelectedGroupForRecommend(group);
+      setIsLoadingAI(true);
+      setRecommendedTutors([]);
 
-  const handleOpenRequestModal = (tutor: TutorItem) => {
-    if (myGroups.length === 0) {
-        alert("Bạn chưa có nhóm nào. Vui lòng tạo nhóm trước khi gửi yêu cầu.");
-        return;
-    }
-    setRequestTutor(tutor);
-    if (selectedTutor) closeDetailsModal();
+      try {
+          const res = await fetch(`${API_URL}/groups/${group.id}/recommend-tutors`);
+          const data = await res.json();
+          
+          if (res.ok) {
+              // Map dữ liệu trả về (có thêm match_score)
+              const aiTutors = data.map((t: any) => ({
+                  id: t.id,
+                  name: t.name,
+                  rating: t.rating || 0,
+                  skills: t.skills || [],
+                  bio: t.bio,
+                  match_score: t.match_score, // Điểm số từ AI
+                  location: "HCMUT", 
+                  mode: t.available ? "Online & Offline" : "Busy"
+              }));
+              setRecommendedTutors(aiTutors);
+          } else {
+              showToast("Lỗi khi lấy gợi ý từ AI.", "error");
+          }
+      } catch (error) {
+          console.error(error);
+          showToast("Lỗi kết nối AI Service.", "error");
+      } finally {
+          setIsLoadingAI(false);
+      }
   };
 
-  const closeRequestModal = () => setRequestTutor(null);
+    const renderStars = (rating: number) => (
+      <span style={{color: '#fbbf24', fontSize: '14px'}}>
+          {"★".repeat(Math.round(rating))}
+          <span style={{color: '#d1d5db'}}>{"★".repeat(5 - Math.round(rating))}</span>
+      </span>
+    );
 
-  const handleConfirmRequest = async (group: MyGroupItem) => {
-    if (!requestTutor) return;
-    try {
-        const res = await fetch(`${API_URL}/groups/${group.id}/request-tutor`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                tutor_id: requestTutor.id,
-                message: "Em muốn mời thầy/cô hướng dẫn nhóm này ạ." 
-            }),
-            credentials: 'include'
-        });
-        const data = await res.json();
-        if (res.ok) {
-            alert(`Thành công: ${data.message}`);
-            closeRequestModal();
-        } else {
-            alert(`Lỗi: ${data.error}`);
-        }
-    } catch (e) { console.error(e); alert("Lỗi kết nối server."); }
-  };
+    const formatDateTime = (isoString: string) => {
+      const date = new Date(isoString);
+      const day = date.toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'numeric' }); // Thứ 2, 28/11
+      const time = date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+      return { day, time };
+    };
 
-  const handleRecommendTutor = () => alert("Tính năng đang phát triển");
-
-  const renderStars = (rating: number) => (
-    <span style={{color: '#fbbf24', fontSize: '14px'}}>
-        {"★".repeat(Math.round(rating))}
-        <span style={{color: '#d1d5db'}}>{"★".repeat(5 - Math.round(rating))}</span>
-    </span>
-  );
-
-  const formatDateTime = (isoString: string) => {
-    const date = new Date(isoString);
-    const day = date.toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'numeric' }); // Thứ 2, 28/11
-    const time = date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
-    return { day, time };
-  };
-
-  return (
-    <div style={styles.container}>
+    return (
+      <div style={styles.container}>
 
 
-      <main style={styles.mainContent}>
-        
-        <div style={styles.headerSection}>
-          <div style={styles.contentBox}>
-            <h1 style={styles.pageTitle}>Search Tutors</h1>
-            <p style={styles.subTitle}>Fast search ≤2s with 1000 tutors</p>
-          </div>
-        </div>
-
-        <div style={styles.searchContainer}>
-          <span style={styles.searchIcon}>🔍</span>
-          <input type="text" placeholder="Search tutor name..." style={styles.searchInput} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}/>
-        </div>
-
-        <div style={styles.filterRow}>
-            <div style={styles.dropdownContainer}>
-                <select style={styles.filterSelect} value={filterType} onChange={(e) => setFilterType(e.target.value)}>
-                    <option value="All">All</option>
-                    <option value="Online">Online</option>
-                    <option value="Offline">Offline</option>
-                </select>
+        <main style={styles.mainContent}>
+          
+          <div style={styles.headerSection}>
+            <div style={styles.contentBox}>
+              <h1 style={styles.pageTitle}>Search Tutors</h1>
+              <p style={styles.subTitle}>Fast search ≤2s with 1000 tutors</p>
             </div>
-            <button style={styles.btnRecommend} onClick={handleRecommendTutor}>
-                <span style={{marginRight: '5px'}}>⭐</span> Recommended Tutor
-            </button>
-        </div>
-
-        <div style={styles.gridContainer}>
-            {filteredTutors.length === 0 && (
-                <p style={{gridColumn: '1 / -1', color: '#6b7280', textAlign: 'center'}}>No tutors found.</p>
-            )}
-
-            {filteredTutors.map((tutor) => (
-                <div key={tutor.id} style={styles.card}>
-                    <div style={styles.cardTop}>
-                        <img src={DEFAULT_AVATAR} alt="avatar" style={{width: '60px', height: '60px', borderRadius: '50%', marginBottom: '10px', objectFit: 'cover'}} />
-                        <h3 style={styles.tutorName}>{tutor.name}</h3>
-                        <div style={styles.ratingBadge}><span style={{color: '#fbbf24', marginRight: '4px'}}>★</span>{tutor.rating}</div>
-                    </div>
-
-                    <div style={styles.skillsContainer}>
-                        {tutor.skills.slice(0,3).map((skill, index) => (
-                            <span key={index} style={styles.skillTag}>{skill}</span>
-                        ))}
-                    </div>
-
-                    <div style={styles.infoRow}><span style={styles.infoIcon}>📍</span><span style={styles.infoText}>{tutor.location}</span></div>
-                    <div style={styles.infoRow}><span style={styles.infoIcon}>🎥</span><span style={styles.infoText}>{tutor.mode}</span></div>
-                    <div style={{flexGrow: 1, minHeight: '20px'}}></div>
-
-                    <div style={styles.actionRow}>
-                        <button style={styles.btnView} onClick={() => handleViewDetails(tutor)}>View Details</button>
-                        <button style={styles.btnRequest} onClick={() => handleOpenRequestModal(tutor)}>Request Tutor</button>
-                    </div>
-                </div>
-            ))}
-        </div>
-      </main>
-
-      {selectedTutor && (
-        <div style={styles.modalOverlay}>
-          <div style={styles.detailModalBox}>
-             <span style={styles.closeIcon} onClick={closeDetailsModal}>✕</span>
-             
-             <div style={{display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '20px'}}>
-                <img src={DEFAULT_AVATAR} alt="avatar" style={{width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover'}} />
-                <div>
-                    <h2 style={{margin: '0 0 5px 0', fontSize: '24px', color: '#111827'}}>{selectedTutor.name}</h2>
-                    <div style={styles.ratingBadge}><span style={{color: '#fbbf24', marginRight: '4px'}}>★</span>{selectedTutor.rating}</div>
-                </div>
-             </div>
-
-             <div style={styles.tabContainer}>
-                <div style={activeTab === 'overview' ? styles.tabActive : styles.tabInactive} onClick={() => setActiveTab('overview')}>Tổng quan</div>
-                <div style={activeTab === 'schedule' ? styles.tabActive : styles.tabInactive} onClick={() => setActiveTab('schedule')}>Lịch dạy</div>
-                <div style={activeTab === 'reviews' ? styles.tabActive : styles.tabInactive} onClick={() => setActiveTab('reviews')}>Đánh giá</div>
-             </div>
-
-             <div style={styles.modalContentArea}>
-                 
-                 {activeTab === 'overview' && (
-                   <>
-                     <h4 style={styles.sectionTitle}>Kỹ năng</h4>
-                     <div style={{display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '20px'}}>
-                       {selectedTutor.skills.map((skill, idx) => (
-                         <span key={idx} style={styles.skillTagDark}>{skill}</span>
-                       ))}
-                     </div>
-                     <h4 style={styles.sectionTitle}>Giới thiệu</h4>
-                     <p style={{color: '#6b7280', lineHeight: '1.5'}}>{selectedTutor.bio}</p>
-                   </>
-                 )}
-
-                 {activeTab === 'schedule' && (
-                   <div style={{display: 'flex', flexDirection: 'column', gap: '10px'}}>
-                     {tutorSchedules.length > 0 ? (
-                       tutorSchedules.map((item) => {
-                         const dt = formatDateTime(item.time);
-                         return (
-                           <div key={item.id} style={styles.scheduleItem}>
-                             <span style={{fontWeight: 'bold', marginRight: '10px'}}>📅 {dt.day}</span>
-                             <span>🕒 {dt.time} ({item.duration} mins)</span>
-                             <div style={{fontSize: '12px', color: '#666', marginLeft: '10px'}}> - {item.title}</div>
-                           </div>
-                         )
-                       })
-                     ) : (
-                       <p style={{color: '#6b7280', fontStyle: 'italic', textAlign: 'center'}}>Chưa có lịch dạy nào.</p>
-                     )}
-                   </div>
-                 )}
-
-                 {activeTab === 'reviews' && (
-                   <div style={{display: 'flex', flexDirection: 'column', gap: '15px'}}>
-                     {tutorReviews.length > 0 ? (
-                       tutorReviews.map((review) => (
-                         <div key={review.id} style={styles.reviewCard}>
-                            <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '5px'}}>
-                                <span style={{fontWeight: '600', fontSize: '14px', color: '#1f2937'}}>
-                                    {review.student_name || `Student #${review.student_id}`}
-                                </span>
-                                <span style={{fontSize: '12px', color: '#9ca3af'}}>
-                                    {new Date(review.created_at).toLocaleDateString('vi-VN')}
-                                </span>
-                            </div>
-                            <div style={{marginBottom: '5px'}}>
-                                {renderStars(review.rating)}
-                            </div>
-                            <p style={{margin: 0, fontSize: '14px', color: '#4b5563', lineHeight: '1.4'}}>
-                                "{review.comment}"
-                            </p>
-                         </div>
-                       ))
-                     ) : (
-                       <div style={{textAlign: 'center', padding: '30px', color: '#6b7280'}}>
-                         Chưa có đánh giá nào.
-                       </div>
-                     )}
-                   </div>
-                 )}
-             </div>
-
-             <div style={styles.modalFooter}>
-                 <button style={styles.btnOutline} onClick={closeDetailsModal}>Đóng</button>
-                 <button style={styles.btnRequestModal} onClick={() => handleOpenRequestModal(selectedTutor)}>Yêu cầu gia sư</button>
-             </div>
           </div>
-        </div>
-      )}
 
-      {requestTutor && (
-        <div style={styles.modalOverlay}>
-            <div style={{...styles.modalBox, width: '500px'}}>
-                <div style={styles.modalHeader}>
-                    <h2 style={styles.modalTitle}>Yêu cầu gia sư</h2>
-                    <span style={styles.closeIcon} onClick={closeRequestModal}>✕</span>
-                </div>
-                <p style={styles.modalSubTitle}>Chọn nhóm để yêu cầu gia sư {requestTutor.name}</p>
+          <div style={styles.searchContainer}>
+            <span style={styles.searchIcon}>🔍</span>
+            <input type="text" placeholder="Search tutor name..." style={styles.searchInput} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}/>
+          </div>
 
-                <div style={{display: 'flex', flexDirection: 'column', gap: '15px', maxHeight: '300px', overflowY: 'auto'}}>
-                    {myGroups.map((group) => (
-                        <div key={group.id} style={styles.groupSelectCard}>
-                            <div>
-                                <h4 style={{margin: '0 0 5px 0', fontSize: '16px', color: "black"}}>{group.name}</h4>
-                                <p style={{margin: '0 0 5px 0', fontSize: '13px', color: '#6b7280'}}>{group.topic}</p>
-                                <div style={{fontSize: '13px', color: '#6b7280'}}>👥 {group.memberCount} thành viên</div>
+          <div style={styles.filterRow}>
+              <div style={styles.dropdownContainer}>
+                  <select style={styles.filterSelect} value={filterType} onChange={(e) => setFilterType(e.target.value)}>
+                      <option value="All">All</option>
+                      <option value="Online">Online</option>
+                      <option value="Offline">Offline</option>
+                      <option value="Ly Thuong Kiet Campus">Ly Thuong Kiet Campus</option>
+                      <option value="Dong Hoa Campus">Dong Hoa Campus</option>
+                  </select>
+              </div>
+              <button style={styles.btnRecommend} onClick={handleRecommendTutor}>
+                  <span style={{marginRight: '5px'}}>⭐</span> Recommended Tutor
+              </button>
+          </div>
+
+          <div style={styles.gridContainer}>
+              {filteredTutors.length === 0 && (
+                  <p style={{gridColumn: '1 / -1', color: '#6b7280', textAlign: 'center'}}>No tutors found.</p>
+              )}
+
+              {filteredTutors.map((tutor) => (
+                  <div key={tutor.id} style={styles.card}>
+                      <div style={styles.cardTop}>
+                          <img src={DEFAULT_AVATAR} alt="avatar" style={{width: '60px', height: '60px', borderRadius: '50%', marginBottom: '10px', objectFit: 'cover'}} />
+                          <h3 style={styles.tutorName}>{tutor.name}</h3>
+                          <div style={styles.ratingBadge}><span style={{color: '#fbbf24', marginRight: '4px'}}>★</span>{tutor.rating}</div>
+                      </div>
+
+                      <div style={styles.skillsContainer}>
+                          {tutor.skills.slice(0,3).map((skill, index) => (
+                              <span key={index} style={styles.skillTag}>{skill}</span>
+                          ))}
+                      </div>
+
+                      <div style={styles.infoRow}><span style={styles.mkt}>Location📍:</span><span style={styles.infoText}>{tutor.location}</span></div> 
+                      <div style={styles.infoRow}><span style={styles.mkt}>Class Availability 🎥:</span><span style={styles.infoText}>{tutor.mode}</span></div>
+                      <div style={{flexGrow: 1, minHeight: '20px'}}></div>
+
+                      <div style={styles.actionRow}>
+                          <button style={styles.btnView} onClick={() => handleViewDetails(tutor)}>View Details</button>
+                          <button style={styles.btnRequest} onClick={() => handleOpenRequestModal(tutor)}>Request Tutor</button>
+                      </div>
+                  </div>
+              ))}
+          </div>
+        </main>
+
+        {selectedTutor && (
+          <div style={styles.modalOverlay}>
+            <div style={styles.detailModalBox}>
+              <span style={styles.closeIcon} onClick={closeDetailsModal}>✕</span>
+              
+              <div style={{display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '20px'}}>
+                  <img src={DEFAULT_AVATAR} alt="avatar" style={{width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover'}} />
+                  <div>
+                      <h2 style={{margin: '0 0 5px 0', fontSize: '24px', color: '#111827'}}>{selectedTutor.name}</h2>
+                      <div style={styles.ratingBadge}><span style={{color: '#fbbf24', marginRight: '4px'}}>★</span>{selectedTutor.rating}</div>
+                  </div>
+              </div>
+
+              <div style={styles.tabContainer}>
+                  <div style={activeTab === 'overview' ? styles.tabActive : styles.tabInactive} onClick={() => setActiveTab('overview')}>Tổng quan</div>
+                  <div style={activeTab === 'schedule' ? styles.tabActive : styles.tabInactive} onClick={() => setActiveTab('schedule')}>Lịch dạy</div>
+                  <div style={activeTab === 'reviews' ? styles.tabActive : styles.tabInactive} onClick={() => setActiveTab('reviews')}>Đánh giá</div>
+              </div>
+
+              <div style={styles.modalContentArea}>
+                  
+                  {activeTab === 'overview' && (
+                    <>
+                      <h4 style={styles.sectionTitle}>Kỹ năng</h4>
+                      <div style={{display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '20px'}}>
+                        {selectedTutor.skills.map((skill, idx) => (
+                          <span key={idx} style={styles.skillTagDark}>{skill}</span>
+                        ))}
+                      </div>
+                      <h4 style={styles.sectionTitle}>Giới thiệu</h4>
+                      <p style={{color: '#6b7280', lineHeight: '1.5'}}>{selectedTutor.bio}</p>
+                    </>
+                  )}
+
+                  {activeTab === 'schedule' && (
+                    <div style={{display: 'flex', flexDirection: 'column', gap: '10px'}}>
+                      {tutorSchedules.length > 0 ? (
+                        tutorSchedules.map((item) => {
+                          const dt = formatDateTime(item.time);
+                          return (
+                            <div key={item.id} style={styles.scheduleItem}>
+                              <span style={{fontWeight: 'bold', marginRight: '10px'}}>📅 {dt.day}</span>
+                              <span>🕒 {dt.time} ({item.duration} mins)</span>
+                              <div style={{fontSize: '12px', color: '#666', marginLeft: '10px'}}> - {item.title}</div>
                             </div>
-                            <button style={styles.btnConfirmRequest} onClick={() => handleConfirmRequest(group)}>Xác nhận</button>
+                          )
+                        })
+                      ) : (
+                        <p style={{color: '#6b7280', fontStyle: 'italic', textAlign: 'center'}}>Chưa có lịch dạy nào.</p>
+                      )}
+                    </div>
+                  )}
+
+                  {activeTab === 'reviews' && (
+                    <div style={{display: 'flex', flexDirection: 'column', gap: '15px'}}>
+                      {tutorReviews.length > 0 ? (
+                        tutorReviews.map((review) => (
+                          <div key={review.id} style={styles.reviewCard}>
+                              <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '5px'}}>
+                                  <span style={{fontWeight: '600', fontSize: '14px', color: '#1f2937'}}>
+                                      {review.student_name || `Student #${review.student_id}`}
+                                  </span>
+                                  <span style={{fontSize: '12px', color: '#9ca3af'}}>
+                                      {new Date(review.created_at).toLocaleDateString('vi-VN')}
+                                  </span>
+                              </div>
+                              <div style={{marginBottom: '5px'}}>
+                                  {renderStars(review.rating)}
+                              </div>
+                              <p style={{margin: 0, fontSize: '14px', color: '#4b5563', lineHeight: '1.4'}}>
+                                  "{review.comment}"
+                              </p>
+                          </div>
+                        ))
+                      ) : (
+                        <div style={{textAlign: 'center', padding: '30px', color: '#6b7280'}}>
+                          Chưa có đánh giá nào.
                         </div>
-                    ))}
+                      )}
+                    </div>
+                  )}
+              </div>
+
+              <div style={styles.modalFooter}>
+                  <button style={styles.btnOutline} onClick={closeDetailsModal}>Đóng</button>
+                  <button style={styles.btnRequestModal} onClick={() => handleOpenRequestModal(selectedTutor)}>Yêu cầu gia sư</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {requestTutor && (
+          <div style={styles.modalOverlay}>
+              <div style={{...styles.modalBox, width: '500px'}}>
+                  <div style={styles.modalHeader}>
+                      <h2 style={styles.modalTitle}>Yêu cầu gia sư</h2>
+                      <span style={styles.closeIcon} onClick={closeRequestModal}>✕</span>
+                  </div>
+                  <p style={styles.modalSubTitle}>Chọn nhóm để yêu cầu gia sư {requestTutor.name}</p>
+
+                  <div style={{display: 'flex', flexDirection: 'column', gap: '15px', maxHeight: '300px', overflowY: 'auto'}}>
+                      {myGroups.map((group) => (
+                          <div key={group.id} style={styles.groupSelectCard}>
+                              <div>
+                                  <h4 style={{margin: '0 0 5px 0', fontSize: '16px', color: "black"}}>{group.name}</h4>
+                                  <p style={{margin: '0 0 5px 0', fontSize: '13px', color: '#6b7280'}}>{group.topic}</p>
+                                  <div style={{fontSize: '13px', color: '#6b7280'}}>👥 {group.memberCount} thành viên</div>
+                              </div>
+                              <button style={styles.btnConfirmRequest} onClick={() => handleConfirmRequest(group)}>Xác nhận</button>
+                          </div>
+                      ))}
+                  </div>
+                  
+                  <div style={{...styles.modalFooter, marginTop: '20px'}}>
+                      <button style={styles.btnOutline} onClick={closeRequestModal}>Hủy</button>
+                  </div>
+              </div>
+          </div>
+        )}
+
+        {showRecommendModal && (
+        <div style={styles.modalOverlay}>
+            <div style={{...styles.detailModalBox, width: '700px'}}>
+                <div style={styles.modalHeader}>
+                    <h2 style={styles.modalTitle}>✨ AI Tutor Recommendation</h2>
+                    <span style={styles.closeIcon} onClick={() => setShowRecommendModal(false)}>✕</span>
                 </div>
                 
-                 <div style={{...styles.modalFooter, marginTop: '20px'}}>
-                     <button style={styles.btnOutline} onClick={closeRequestModal}>Hủy</button>
-                 </div>
+                {/* Bước 1: Chọn nhóm */}
+                {!selectedGroupForRecommend ? (
+                    <>
+                        <p style={styles.modalSubTitle}>Select a group to find the best tutors:</p>
+                        <div style={{display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '400px', overflowY: 'auto'}}>
+                            {groupsWithoutTutor.map(group => (
+                                <div key={group.id} style={styles.groupSelectCard} onClick={() => handleGetAIRecommendation(group)}>
+                                    <div>
+                                        <h4 style={{margin: 0, fontSize: '16px', color: '#1f2937'}}>{group.name}</h4>
+                                        <p style={{margin: 0, fontSize: '13px', color: '#6b7280'}}>{group.topic}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </>
+                ) : (
+                    /* Bước 2: Hiển thị kết quả AI */
+                    <>
+                        <div style={{display: 'flex', alignItems: 'center', marginBottom: '15px'}}>
+                            <button onClick={() => setSelectedGroupForRecommend(null)} style={{background: 'none', border: 'none', cursor: 'pointer', marginRight: '10px', fontSize: '16px'}}>⬅️ Back</button>
+                            <p style={{margin: 0, fontWeight: '600'}}>Results for: {selectedGroupForRecommend.name}</p>
+                        </div>
+
+                        {isLoadingAI ? (
+                            <div style={{textAlign: 'center', padding: '40px', color: '#6b7280'}}>
+                                ⏳ Analyzing compatibility...
+                            </div>
+                        ) : (
+                            <div style={{display: 'flex', flexDirection: 'column', gap: '15px', maxHeight: '400px', overflowY: 'auto'}}>
+                                {recommendedTutors.length === 0 ? (
+                                    <p style={{textAlign: 'center'}}>No suitable tutors found.</p>
+                                ) : (
+                                    recommendedTutors.map((tutor) => (
+                                        <div key={tutor.id} style={styles.recommendCard}>
+                                            <div style={{display: 'flex', alignItems: 'center', gap: '15px'}}>
+                                                {/* Hiển thị điểm số phù hợp */}
+                                                <div style={styles.matchScoreCircle}>
+                                                    {tutor.match_score}%
+                                                </div>
+                                                <div>
+                                                    <h4 style={{margin: 0, fontSize: '16px', color: '#1f2937'}}>{tutor.name}</h4>
+                                                    <p style={{margin: 0, fontSize: '12px', color: '#6b7280'}}>{tutor.skills.slice(0,3).join(", ")}</p>
+                                                </div>
+                                            </div>
+                                            {/* Tái sử dụng hàm handleConfirmRequest cũ để gửi yêu cầu */}
+                                            <button 
+                                                style={styles.btnConfirmRequest} 
+                                                onClick={() => {
+                                                    setRequestTutor(tutor); // Set tạm tutor để hàm confirm dùng
+                                                    handleConfirmRequest(selectedGroupForRecommend);
+                                                    setShowRecommendModal(false); // Đóng modal recommend sau khi request
+                                                }}
+                                            >
+                                                Request
+                                            </button>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        )}
+                    </>
+                )}
             </div>
         </div>
       )}
 
-    </div>
-  )
-}
+      {/* --- 3. RENDER LOGBAR Ở CUỐI CÙNG --- */}
+      {toast && (
+        <Logbar 
+          message={toast.message} 
+          type={toast.type} 
+          onClose={() => setToast(null)} 
+        />
+      )}
+      </div>
+    )
+  }
 
 const styles = {
   container: { fontFamily: "'Segoe UI', sans-serif", padding: 0, margin: 0, boxSizing: "border-box" as const, backgroundColor: "#eff2f5ff", minHeight: "100vh", width: "100vw", display: "flex", flexDirection: "column" as const },
@@ -390,7 +547,7 @@ const styles = {
   cardTop: { display: "flex", flexDirection: "column" as const, alignItems: "center", marginBottom: "15px" },
   tutorName: { fontSize: "20px", fontWeight: "600", margin: "0 0 8px 0", color: "#111827" },
   ratingBadge: { display: "flex", alignItems: "center", fontSize: "14px", fontWeight: "bold", color: "#374151" },
-  skillsContainer: { display: "flex", flexWrap: "wrap" as const, gap: "8px", justifyContent: "center", marginBottom: "20px" },
+  skillsContainer: { display: "flex", flexWrap: "wrap" as const, gap: "8px", justifyContent: "center", marginBottom: "20px", fontWeight: "bold" },
   skillTag: { backgroundColor: "#f3f4f6", color: "#374151", fontSize: "12px", padding: "4px 12px", borderRadius: "16px", fontWeight: "500" },
   infoRow: { display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px", color: "#6b7280", fontSize: "14px" },
   infoIcon: { fontSize: "16px" },
@@ -417,5 +574,31 @@ const styles = {
   modalSubTitle: { color: "#6b7280", marginTop: 0, marginBottom: "20px", fontSize: "14px" },
   groupSelectCard: { border: "1px solid #e5e7eb", borderRadius: "12px", padding: "15px", display: "flex", justifyContent: "space-between", alignItems: "center" },
   btnConfirmRequest: { padding: "8px 16px", backgroundColor: "#0f172a", border: "none", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: "600", color: "white" },
-  reviewCard: { border: "1px solid #e5e7eb", borderRadius: "12px", padding: "15px", backgroundColor: "#f9fafb" }
+  reviewCard: { border: "1px solid #e5e7eb", borderRadius: "12px", padding: "15px", backgroundColor: "#f9fafb" },
+
+  mkt: {color: "black", fontWeight: "bold", marginRight: "5px"},
+  recommendCard: {
+    border: '1px solid #e5e7eb',
+    borderRadius: '12px',
+    padding: '15px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: 'white',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+  },
+  matchScoreCircle: {
+    width: '50px',
+    height: '50px',
+    borderRadius: '50%',
+    backgroundColor: '#dbeafe', // Xanh nhạt
+    color: '#1e40af', // Xanh đậm
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    fontWeight: 'bold',
+    fontSize: '14px',
+    border: '2px solid #2563eb'
+  }
 };
+
