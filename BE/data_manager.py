@@ -180,6 +180,35 @@ def get_tutors(filters):
     
     return tutors
 
+def update_user_profile(user_id, update_data):
+    data = load_data()
+    users = data.get("users", [])
+    
+    for user in users:
+        if user["id"] == user_id:
+            # --- CẬP NHẬT CÁC TRƯỜNG MỚI TẠI ĐÂY ---
+            if "name" in update_data:
+                user["name"] = update_data["name"]
+            
+            if "bio" in update_data:
+                user["bio"] = update_data["bio"]
+            
+            if "skills" in update_data:
+                user["skills"] = update_data["skills"]
+                
+            # Thêm Expertise
+            if "expertise" in update_data:
+                user["expertise"] = update_data["expertise"]
+                
+            # Thêm Location (nếu muốn)
+            if "location" in update_data:
+                user["location"] = update_data["location"]
+            
+            save_data(data) # Lưu vào file data.json
+            return user
+            
+    return None
+
 def add_schedule(schedule_info):
     data = load_data()
     schedules = data.setdefault('schedules', [])
