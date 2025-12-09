@@ -172,6 +172,25 @@ def get_tutors():
     tutors = data_manager.get_tutors(filters if filters else None)
     return jsonify(tutors)
 
+@app.route("/me/profile", methods=["PUT"])
+def update_my_profile():
+    # 1. Lấy thông tin user đang login
+    user = get_current_user_from_request()
+    if not user:
+        return jsonify({"error": "Unauthorized"}), 401
+    
+    # 2. Lấy dữ liệu gửi lên
+    data = request.get_json()
+    
+    # 3. Gọi hàm update trong data_manager (Sẽ viết ở bước dưới)
+    # Lưu ý: truyền user['id']
+    updated_user = data_manager.update_user_profile(user['id'], data)
+    
+    if updated_user:
+        return jsonify({"message": "Update success", "user": updated_user})
+    
+    return jsonify({"error": "Failed to update"}), 500
+
 #Tao lich
 @app.route("/schedules", methods=["POST"])
 def create_schedule():
