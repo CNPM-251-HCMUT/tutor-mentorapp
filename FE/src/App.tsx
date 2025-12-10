@@ -18,6 +18,8 @@ import TutorProgress from './pages/tutor/TutorProgress';
 import TutorSchedule from './pages/tutor/TutorSchedule';
 import TutorFeedback from './pages/tutor/TutorFeedback';
 import TutorDocuments from './pages/tutor/TutorDocuments';
+import Profile from './pages/tutor/Menu/Profile';
+import Settings from './pages/tutor/Menu/Settings';
 
 import StaffDashboard from './pages/staff/StaffDashboard';
 import StaffReports from './pages/staff/StaffReports';
@@ -47,6 +49,8 @@ function App() {
           <Route path="/student/feedback" element={<StudentFeedback />} />
           <Route path="/student/documents" element={<StudentDocuments />} />
           <Route path="/student/sessions" element={<StudentSessions />} />
+          <Route path="/student/profile" element={<Profile />} />
+          <Route path="/student/settings" element={<Settings />} />
 
           {/* Tutor */}
           <Route path="/tutor/dashboard" element={<TutorDashboard />} />
@@ -56,6 +60,8 @@ function App() {
           <Route path="/tutor/feedback" element={<TutorFeedback />} />
           <Route path="/tutor/documents" element={<TutorDocuments />} />
           <Route path="/tutor/requests" element={<TutorRequests />} />
+          <Route path="/tutor/profile" element={<Profile />} />
+          <Route path="/tutor/settings" element={<Settings />} />
 
           {/* Staff + Admin */}
           <Route path="/staff/dashboard" element={<StaffDashboard />} />
