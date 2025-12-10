@@ -1,4 +1,5 @@
-import React from "react";
+import { useState, useEffect } from "react";
+import { authApi, tutorApi, type Feedback } from "../services/api";
 
 // --- Icons ---
 
@@ -72,37 +73,77 @@ const StatCard = ({
   </div>
 );
 
+// Extended Feedback interface với thông tin từ backend
+interface ExtendedFeedback extends Feedback {
+  student_name?: string;
+  student?: any;
+  schedule?: any;
+  group?: any;
+  group_name?: string;
+}
+
 // --- Main Page Component ---
 
-export default function Feedback() {
-  // Mock Data
-  const feedbacks = [
-    {
-      id: 1,
-      group: "ML Study Group",
-      date: "10/14/2025",
-      from: "Nguyễn Văn An",
-      sessionQuality: 5,
-      tutorQuality: 5,
-      comment: "Excellent session! Very clear explanations.",
-    },
-    {
-      id: 2,
-      group: "ML Study Group",
-      date: "10/14/2025",
-      from: "Trần Thị Bình",
-      sessionQuality: 4, // Ví dụ 4 sao để test hiển thị sao xám
-      tutorQuality: 5,
-      comment: "Good pace, would like more practice exercises.",
-    },
-  ];
+export default function TutorFeedback() {
+  const [feedbacks, setFeedbacks] = useState<ExtendedFeedback[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchFeedbacks();
+  }, []);
+
+  const fetchFeedbacks = async () => {
+    try {
+      setLoading(true);
+      const [userRes, feedbacksRes] = await Promise.all([
+        authApi.me(),
+        tutorApi.getFeedbacks(),
+      ]);
+
+      // Đảm bảo feedbacks là mảng
+      const feedbacksList = Array.isArray(feedbacksRes) ? feedbacksRes : [];
+      
+      // Sắp xếp theo ngày mới nhất
+      const sorted = feedbacksList.sort((a, b) => {
+        const dateA = new Date(a.created_at).getTime();
+        const dateB = new Date(b.created_at).getTime();
+        return dateB - dateA;
+      });
+
+      setFeedbacks(sorted);
+    } catch (error) {
+      console.error("Failed to fetch feedbacks:", error);
+      setFeedbacks([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Tính toán thống kê
+  const totalFeedback = feedbacks.length;
+  const averageRating = feedbacks.length > 0
+    ? (feedbacks.reduce((sum, fb) => sum + fb.rating, 0) / feedbacks.length).toFixed(1)
+    : "0.0";
+
+  // Format date
+  const formatDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', { 
+        month: '2-digit', 
+        day: '2-digit', 
+        year: 'numeric' 
+      });
+    } catch {
+      return dateString;
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white font-sans text-gray-900">
       <div className="max-w-[1200px] mx-auto px-8 py-10">
         {/* --- Header Section --- */}
         <div className="mb-10 text-left">
-          {/* Typography chuẩn: Size 64, Black, Italic, Tight Tracking */}
           <h1
             className="text-[64px] font-black italic leading-none tracking-tighter text-gray-900 mb-2"
             style={{ fontFamily: "system-ui, -apple-system, sans-serif" }}
@@ -113,84 +154,98 @@ export default function Feedback() {
 
         {/* --- Top Stats Grid --- */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <StatCard title="Total Feedback" value="2" />
-          <StatCard title="Session Quality" value="4.5" showStar />
-          <StatCard title="Tutor Quality" value="5.0" showStar />
+          <StatCard title="Total Feedback" value={totalFeedback} />
+          <StatCard title="Average Rating" value={averageRating} showStar />
+          <StatCard title="Tutor Quality" value={averageRating} showStar />
         </div>
 
         {/* --- Feedback List --- */}
-        <div className="space-y-6">
-          {feedbacks.map((item) => (
-            <div
-              key={item.id}
-              className="bg-white border border-gray-100 rounded-2xl p-6 shadow-[0_2px_8px_rgba(0,0,0,0.02)]"
-            >
-              {/* Header: Group Name & Date */}
-              <div className="flex justify-between items-start mb-1">
-                <h3 className="text-lg font-bold text-gray-900">
-                  {item.group}
-                </h3>
-                <span className="text-xs text-gray-400 font-medium">
-                  {item.date}
-                </span>
-              </div>
+        {loading ? (
+          <div className="text-center text-gray-500 py-10">Loading feedback...</div>
+        ) : feedbacks.length === 0 ? (
+          <div className="text-center text-gray-400 py-10 italic">No feedback received yet.</div>
+        ) : (
+          <div className="space-y-6">
+            {feedbacks.map((item) => {
+              const groupName = item.group_name || item.group?.name || `Group #${item.schedule?.group_id || 'N/A'}`;
+              const studentName = item.student_name || item.student?.name || `Student #${item.student_id}`;
+              const formattedDate = formatDate(item.created_at);
 
-              {/* Sender Name */}
-              <div className="text-sm text-gray-500 mb-6">
-                From:{" "}
-                <span className="font-medium text-gray-700">{item.from}</span>
-              </div>
-
-              {/* Ratings Row */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-6">
-                {/* Session Quality */}
-                <div>
-                  <div className="text-xs text-gray-500 font-medium mb-1.5">
-                    Session Quality
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <StarRating rating={item.sessionQuality} />
-                    <span className="text-sm font-medium text-gray-900">
-                      {item.sessionQuality}/5
+              return (
+                <div
+                  key={item.id}
+                  className="bg-white border border-gray-100 rounded-2xl p-6 shadow-[0_2px_8px_rgba(0,0,0,0.02)]"
+                >
+                  {/* Header: Group Name & Date */}
+                  <div className="flex justify-between items-start mb-1">
+                    <h3 className="text-lg font-bold text-gray-900">
+                      {groupName}
+                    </h3>
+                    <span className="text-xs text-gray-400 font-medium">
+                      {formattedDate}
                     </span>
                   </div>
-                </div>
 
-                {/* Tutor Quality */}
-                <div>
-                  <div className="text-xs text-gray-500 font-medium mb-1.5">
-                    Tutor Quality
+                  {/* Sender Name */}
+                  <div className="text-sm text-gray-500 mb-6">
+                    From:{" "}
+                    <span className="font-medium text-gray-700">{studentName}</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <StarRating rating={item.tutorQuality} />
-                    <span className="text-sm font-medium text-gray-900">
-                      {item.tutorQuality}/5
-                    </span>
-                  </div>
-                </div>
-              </div>
 
-              {/* Comment Box */}
-              <div>
-                <div className="text-xs text-gray-500 font-medium mb-2 pl-1">
-                  Comments
+                  {/* Ratings Row */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-6">
+                    {/* Session Quality - dùng rating chung */}
+                    <div>
+                      <div className="text-xs text-gray-500 font-medium mb-1.5">
+                        Session Quality
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <StarRating rating={item.rating} />
+                        <span className="text-sm font-medium text-gray-900">
+                          {item.rating}/5
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Tutor Quality - dùng rating chung */}
+                    <div>
+                      <div className="text-xs text-gray-500 font-medium mb-1.5">
+                        Tutor Quality
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <StarRating rating={item.rating} />
+                        <span className="text-sm font-medium text-gray-900">
+                          {item.rating}/5
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Comment Box */}
+                  <div>
+                    <div className="text-xs text-gray-500 font-medium mb-2 pl-1">
+                      Comments
+                    </div>
+                    <div className="bg-gray-50 rounded-xl p-4 text-gray-700 font-medium text-sm leading-relaxed">
+                      "{item.comment || "No comment provided."}"
+                    </div>
+                  </div>
                 </div>
-                <div className="bg-gray-50 rounded-xl p-4 text-gray-700 font-medium text-sm leading-relaxed">
-                  "{item.comment}"
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+              );
+            })}
+          </div>
+        )}
 
         {/* --- Footer Alert --- */}
-        <div className="mt-6 bg-blue-50 border border-blue-100 rounded-xl p-4 flex items-start gap-3">
-          <LightBulbIcon className="w-5 h-5 text-yellow-500 mt-0.5 flex-shrink-0" />
-          <p className="text-sm text-blue-800 font-medium">
-            You've received 2 feedback with an average rating of 5.0/5.0. Keep
-            up the excellent work!
-          </p>
-        </div>
+        {feedbacks.length > 0 && (
+          <div className="mt-6 bg-blue-50 border border-blue-100 rounded-xl p-4 flex items-start gap-3">
+            <LightBulbIcon className="w-5 h-5 text-yellow-500 mt-0.5 flex-shrink-0" />
+            <p className="text-sm text-blue-800 font-medium">
+              You've received {totalFeedback} feedback{totalFeedback !== 1 ? 's' : ''} with an average rating of {averageRating}/5.0. Keep
+              up the excellent work!
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
