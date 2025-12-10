@@ -313,6 +313,16 @@ def get_tutor_feedbacks(tutor_id):
     feedbacks = data_manager.get_feedback_by_tutor(tutor_id)
     return jsonify(feedbacks)
 
+@app.route("/tutor/feedbacks", methods=["GET"])
+def get_my_feedbacks():
+    """Lấy feedback của tutor hiện tại (từ session)"""
+    user = get_current_user_from_request()
+    if not user or user.get('role') != 'Tutor':
+        return jsonify({"error": "Unauthorized"}), 401
+    
+    feedbacks = data_manager.get_feedback_by_tutor(user['id'])
+    return jsonify(feedbacks)
+
 @app.route("/tutors/<int:tutor_id>/schedules", methods=["GET"])
 def get_tutor_schedules_api(tutor_id):
     schedules = data_manager.get_schedules_by_tutor(tutor_id)
@@ -338,6 +348,33 @@ def recommend_tutors_for_group(group_id):
     except Exception as e:
         print(f"AI Error: {e}")
         return jsonify({"error": "Lỗi khi xử lý gợi ý"}), 500
+
+# ================== PROGRESS ENDPOINTS ==================
+@app.route("/progress", methods=["GET"])
+def get_progress():
+    """Lấy tất cả progress records"""
+    progress_list = data_manager.get_all_progress()
+    return jsonify(progress_list)
+
+@app.route("/progress", methods=["POST"])
+def create_progress():
+    """Tạo progress record mới"""
+    user = get_current_user_from_request()
+    if not user or user.get('role') != 'Tutor':
+        return jsonify({"error": "Unauthorized"}), 401
+    
+    data = request.get_json()
+    
+    # Validate required fields
+    if not data.get('group_id') or not data.get('date'):
+        return jsonify({"error": "Thiếu thông tin bắt buộc"}), 400
+    
+    # Đảm bảo tutor_id khớp với user hiện tại
+    if data.get('tutor_id') != user['id']:
+        data['tutor_id'] = user['id']
+    
+    new_progress = data_manager.create_progress(data)
+    return jsonify(new_progress), 201
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
