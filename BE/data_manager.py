@@ -250,6 +250,13 @@ def delete_schedule(schedule_id):
             return True
     return False
 
+def get_schedule_by_id(schedule_id):
+    data = load_data()
+    for schedule in data.get('schedules', []):
+        if schedule['id'] == schedule_id:
+            return schedule
+    return None
+
 def get_tutor_classes(tutor_id):
     data = load_data()
     return [
@@ -291,8 +298,24 @@ def get_feedback_by_tutor(tutor_id):
     feedbacks = [f for f in data.get('feedback', []) if f.get('tutor_id') == tutor_id]
     
     for fb in feedbacks:
+        # Lấy thông tin student
         student = get_user_by_id(fb['student_id'])
         fb['student_name'] = student['name'] if student else f"Student #{fb['student_id']}"
+        fb['student'] = student
+        
+        # Lấy thông tin schedule
+        schedule_id = fb.get('schedule_id')
+        if schedule_id:
+            schedule = get_schedule_by_id(schedule_id)
+            if schedule:
+                fb['schedule'] = schedule
+                # Lấy thông tin group từ schedule
+                group_id = schedule.get('group_id')
+                if group_id:
+                    group = get_group_by_id(group_id)
+                    if group:
+                        fb['group'] = group
+                        fb['group_name'] = group.get('name', f"Group #{group_id}")
         
     return feedbacks
 
@@ -300,4 +323,26 @@ def get_feedback_by_tutor(tutor_id):
 def get_schedules_by_tutor(tutor_id):
     data = load_data()
     return [s for s in data.get('schedules', []) if s.get('tutor_id') == tutor_id]
+
+# --- PROGRESS LOGIC ---
+def get_all_progress():
+    data = load_data()
+    return data.get('progress', [])
+
+def get_progress_by_tutor(tutor_id):
+    data = load_data()
+    return [p for p in data.get('progress', []) if p.get('tutor_id') == tutor_id]
+
+def create_progress(progress_info):
+    data = load_data()
+    progress_list = data.setdefault('progress', [])
+    
+    new_id = max((p['id'] for p in progress_list), default=0) + 1
+    info = progress_info.copy()
+    info['id'] = new_id
+    info.setdefault('created_at', datetime.now().isoformat())
+    
+    progress_list.append(info)
+    save_data(data)
+    return info
 
