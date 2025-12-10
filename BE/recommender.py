@@ -3,7 +3,7 @@ import json
 
 
 # --- CẤU HÌNH ---
-API_KEY = "AIzaSyB5t2MUsHRowhIXKZmBeD8ehM33JZ07dt4" # Để project public thì bỏ cái này đi nha, chết tui :))
+API_KEY = "AIzaSyB5t2MUsHRowhIXKZmBeD8ehM33JZ07dt4" # thay key chính ae vào, key này đi r
 genai.configure(api_key=API_KEY)
 
 # Model Free Trial
@@ -120,4 +120,5 @@ def get_recommendations(group, tutors, top_k=3):
     except Exception as e:
         print(f"AI Error: {e}")
         return []
+
 
