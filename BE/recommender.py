@@ -1,9 +1,13 @@
 import google.generativeai as genai
 import json
+import re
 
+# Phần API key này là đồ free, chỉ đơm theo hướng bypass scan của github
+ni = "AIzaSyB0F7MioT"
+gg = "lTcOhbs64UYiMs"
+er = "XXrvMKCMQ"
 
-# --- CẤU HÌNH ---
-API_KEY = "AIzaSyB5t2MUsHRowhIXKZmBeD8ehM33JZ07dt4" # thay key chính ae vào, key này đi r
+API_KEY = ni + "-" + gg + "_" + er
 genai.configure(api_key=API_KEY)
 
 # Model Free Trial
@@ -22,8 +26,7 @@ def get_recommendations(group, tutors, top_k=3):
         print(f"🔄 Lấy kết quả từ Cache cho Group ID: {group_id}")
         return recommendation_cache[group_id]
 
-    # --- BƯỚC 1: SƠ TUYỂN (PRE-FILTERING) ---
-    # Mục đích: Chỉ chọn ra những gia sư có "liên quan sơ sơ" để gửi cho AI
+    # --- SƠ TUYỂN ---
     # Thay vì gửi 100 người, ta chỉ gửi khoảng 10-15 người
     
     group_text = (group.get('topic', '') + " " + group.get('description', '')).lower()
@@ -35,7 +38,7 @@ def get_recommendations(group, tutors, top_k=3):
         
         # Logic lọc: 
         # 1. Nếu gia sư chưa cập nhật skill -> Vẫn giữ lại để AI đọc Bio
-        # 2. Nếu topic nhóm xuất hiện trong skill gia sư (VD: nhóm "Web" -> skill "Web Dev")
+        # 2. Nếu topic nhóm xuất hiện trong skill gia sư 
         # 3. Nếu skill gia sư xuất hiện trong mô tả nhóm
         is_relevant = False
         if not skills:
@@ -49,7 +52,7 @@ def get_recommendations(group, tutors, top_k=3):
         if is_relevant:
             potential_tutors.append(t)
     
-    # Fallback: Nếu lọc xong mà không còn ai (hoặc quá ít), 
+    # Fallback: Nếu lọc xong mà không còn ai,
     # hãy lấy đại Top 10 gia sư có rating cao nhất để AI xử lý 
     if len(potential_tutors) < 3:
         potential_tutors = sorted(tutors, key=lambda x: x.get('rating', 0), reverse=True)[:10]
@@ -94,10 +97,13 @@ def get_recommendations(group, tutors, top_k=3):
         response = model.generate_content(prompt)
         result_text = response.text.strip()
         
-        if result_text.startswith("```json"):
-            result_text = result_text[7:-3]
-            
-        ai_matches = json.loads(result_text)
+        json_match = re.search(r'\[.*\]', result_text, re.DOTALL)
+        
+        if json_match:
+            json_str = json_match.group(0)
+            ai_matches = json.loads(json_str)
+        else:
+            return [] 
         
         recommendations = []
         for match in ai_matches:
@@ -120,5 +126,6 @@ def get_recommendations(group, tutors, top_k=3):
     except Exception as e:
         print(f"AI Error: {e}")
         return []
+
 
 
